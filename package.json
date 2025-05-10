@@ -1,0 +1,27 @@
+{
+  "name": "okada-bobble",
+  "version": "0.0.1",
+  "type": "module",
+  "packageManager": "yarn@4.0.2",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint --ext ts,tsx ./src",
+    "lint:fix": "yarn lint --fix && yarn format-json -w && yarn format-style -w",
+    "format": "prettier -c src/**/*.ts src/**/*.ts src/**/*.css ./*.js ./*.json ./*.html",
+    "format-style": "yarn format -w"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.25.1",
+    "@types/node": "^22.15.3",
+    "eslint": "^9.25.1",
+    "prettier": "^3.5.3",
+    "typescript": "~5.7.2",
+    "typescript-eslint": "^8.31.1",
+    "vite": "^6.3.1"
+  },
+  "dependencies": {
+    "nanoid": "^5.1.5"
+  }
+}
