@@ -1,26 +1,40 @@
+import { nanoid } from "nanoid";
 import Phaser from "phaser";
 
 const BOBBLE_RADIUS = 16;
+const BOBBLE_STICKING_RADIUS = BOBBLE_RADIUS + 0;
 
 export class Bobble extends Phaser.GameObjects.Container {
-  constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: number) {
-    // Create a circular background
-    const background = scene.add.circle(0, 0, BOBBLE_RADIUS, 0xffffff);
+  declare body: Phaser.Physics.Arcade.Body;
+  overlapObject: Phaser.GameObjects.Arc;
+  fixed = false;
 
-    // Create the sprite
+  constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: number) {
+    const background = scene.add.circle(0, 0, BOBBLE_RADIUS, 0xffffff);
     const sprite = scene.add.sprite(0, 0, texture, frame);
 
-    // Call the parent constructor with the container's position
     super(scene, x, y, [background, sprite]);
-
-    // Add the container to the scene
     scene.add.existing(this);
+    this.name = nanoid();
 
-    // Enable physics for the container
+    // Add the primary physics body
     scene.physics.add.existing(this);
-
-    // Set the container's body to be a circle
     const body = this.body as Phaser.Physics.Arcade.Body;
     body.setCircle(BOBBLE_RADIUS, -BOBBLE_RADIUS, -BOBBLE_RADIUS);
+
+    // Create a second physics body as a separate game object
+    const overlapObject = scene.add.circle(0, 0, BOBBLE_STICKING_RADIUS, 0x000000, 0);
+    scene.physics.add.existing(overlapObject);
+    const overlapBody = overlapObject.body as Phaser.Physics.Arcade.Body;
+    overlapBody.setCircle(BOBBLE_STICKING_RADIUS);
+    overlapBody.setGravity(0, 0);
+    overlapBody.moves = false;
+    this.overlapObject = overlapObject;
+    this.add(overlapObject);
+  }
+
+  setMoves(val: boolean) {
+    const body = this.body as Phaser.Physics.Arcade.Body;
+    body.moves = val;
   }
 }
