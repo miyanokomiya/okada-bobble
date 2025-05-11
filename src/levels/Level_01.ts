@@ -1,10 +1,17 @@
+import { InputComponent } from "../components/InputComponent";
 import { Bobble } from "../pawns/bobbles/Bobble";
 import { createBobble } from "../pawns/bobbles/bobbleFactory";
+import { Turret } from "../pawns/bobbles/Turret";
 
 export class Level_01 {
+  private turret!: Turret;
+  private inputComponent!: InputComponent;
+
   constructor(public scene: Phaser.Scene) {}
 
   create() {
+    this.inputComponent = new InputComponent(this.scene);
+
     // Add static walls along the viewport outline
     const { width, height } = this.scene.scale;
     const wallThickness = 20;
@@ -14,6 +21,8 @@ export class Level_01 {
       this.scene.add.rectangle(wallThickness / 2, height / 2, wallThickness, height, 0x000000),
       this.scene.add.rectangle(width - wallThickness / 2, height / 2, wallThickness, height, 0x000000),
     ]);
+
+    this.turret = new Turret(this.scene, width / 2, height - wallThickness);
 
     // Create a group for Bobbles
     const bobbleGroup = this.scene.add.group();
@@ -58,7 +67,15 @@ export class Level_01 {
     });
   }
 
-  update(_time: number, _delta: number): void {
+  update(_time: number, delta: number): void {
+    this.inputComponent.update();
+
+    if (this.inputComponent.pressedKeys.left) {
+      this.turret.rotateTopBy((-60 / 1000) * delta);
+    }
+    if (this.inputComponent.pressedKeys.right) {
+      this.turret.rotateTopBy((60 / 1000) * delta);
+    }
     return;
   }
 }
