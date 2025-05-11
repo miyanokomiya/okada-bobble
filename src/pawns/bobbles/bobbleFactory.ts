@@ -4,12 +4,7 @@ export type BobbleSettings = {
   texture: "oka" | "da";
 };
 
-export function createBobble(
-  scene: Phaser.Scene,
-  x: number,
-  y: number,
-  settings: BobbleSettings,
-): Phaser.GameObjects.Container {
+export function createBobble(scene: Phaser.Scene, x: number, y: number, settings: BobbleSettings): Bobble {
   const frame = settings.texture === "oka" ? 0 : 1;
   const bobble = new Bobble(scene, x, y, "bobbles", frame);
   return bobble;

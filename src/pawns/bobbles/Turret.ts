@@ -30,4 +30,12 @@ export class Turret extends Phaser.GameObjects.Container {
   getTurretAngle(): number {
     return this.sprite_top.angle - 90;
   }
+
+  getTurretTopPosition(): Phaser.Math.Vector2 {
+    const r = Phaser.Math.DegToRad(this.getTurretAngle());
+    const radius = this.sprite_top.displayHeight;
+    return new Phaser.Math.Vector2(this.sprite_top.x, this.sprite_top.y)
+      .add(this)
+      .add(new Phaser.Math.Vector2(radius, 0).rotate(r));
+  }
 }
