@@ -26,3 +26,5 @@ export function getBobbleThemaColor(color: BOBBLE_COLOR): number {
       return 0xffffff;
   }
 }
+
+export const BOBBLE_SPEED = 800;

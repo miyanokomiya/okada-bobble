@@ -1,11 +1,13 @@
 import { InputComponent } from "../components/InputComponent";
+import { RuleComponent } from "../components/rules/RuleComponent";
 import { BobbleMagazine } from "../pawns/BobbleMagazine";
 import { Bobble } from "../pawns/bobbles/Bobble";
 import { createBobble } from "../pawns/bobbles/bobbleFactory";
 import { Turret } from "../pawns/Turret";
-import { bounceBallAtWall, stickBallToBall, stickBallToWall, BOBBLE_COLLISION_PADDING } from "../utils/physics";
+import { bounceBallAtWall, stickBallToBall, stickBallToWall } from "../utils/physics";
+import { BOBBLE_SPEED } from "../utils/settings";
 
-const WALL_THICKNESS = 20;
+const WALL_THICKNESS = 30;
 
 export class Level_01 {
   private turret!: Turret;
@@ -14,6 +16,7 @@ export class Level_01 {
   private bobbleGroup!: Phaser.GameObjects.Group;
   private bobbleMagazine!: BobbleMagazine;
   private loadedBobble: Bobble | undefined;
+  private ruleComponent: RuleComponent = new RuleComponent();
 
   constructor(public scene: Phaser.Scene) {}
 
@@ -78,7 +81,6 @@ export class Level_01 {
     this.bobbleMagazine.reload();
 
     this.resetBobbleMoves();
-    this.updateBobbleMoves();
   }
 
   update(_time: number, delta: number): void {
@@ -94,8 +96,7 @@ export class Level_01 {
       this.shootBobble();
     }
     if (this.inputComponent.justPressedKeys.down) {
-      this.resetBobbleMoves();
-      this.updateBobbleMoves();
+      this.cleanFloatingBobbles();
     }
   }
 
@@ -106,6 +107,21 @@ export class Level_01 {
   private finishShooting(bobble: Bobble) {
     this.shootingGroup.remove(bobble);
     this.bobbleGroup.add(bobble);
+
+    this.ruleComponent.setBobbles(this.bobbleGroup.getChildren().filter((b) => b instanceof Bobble) as Bobble[]);
+    const result = this.ruleComponent.landBobble(bobble);
+    if (result.completed) {
+      this.scene.time.delayedCall(100, () => {
+        result.completed?.forEach((bobble) => {
+          bobble.setMoves(true);
+        });
+        // Clean up the completed bobbles
+        this.cleanFloatingBobbles();
+        // Reset current bobble moves then clean floating bobbles
+        this.resetBobbleMoves();
+        this.cleanFloatingBobbles();
+      });
+    }
   }
 
   private shootBobble() {
@@ -118,7 +134,7 @@ export class Level_01 {
     this.loadedBobble = undefined;
     this.scene.physics.add.existing(newBobble);
     const body = newBobble.body as Phaser.Physics.Arcade.Body;
-    const speed = 500;
+    const speed = BOBBLE_SPEED;
     body.setVelocity(Math.cos(Phaser.Math.DegToRad(angle)) * speed, Math.sin(Phaser.Math.DegToRad(angle)) * speed);
     this.scene.add.existing(newBobble);
     this.shootingGroup.add(newBobble);
@@ -146,16 +162,6 @@ export class Level_01 {
     this.bobbleMagazine.reload();
   }
 
-  private updateBobbleMoves() {
-    this.bobbleGroup.getChildren().forEach((bobble) => {
-      if (!(bobble instanceof Bobble)) return;
-
-      if (bobble.body.moves) {
-        bobble.body.setAllowGravity(true);
-      }
-    });
-  }
-
   private isTouchingWall(bobble: Bobble): boolean {
     const { x, y } = bobble;
     const radius = bobble.body.radius;
@@ -168,7 +174,8 @@ export class Level_01 {
   }
 
   private resetBobbleMoves() {
-    const clusters = this.getBobbleClusters();
+    this.ruleComponent.setBobbles(this.bobbleGroup.getChildren().filter((b) => b instanceof Bobble));
+    const clusters = this.ruleComponent.getBobbleClusters();
     clusters.forEach((cluster) => {
       cluster.forEach((bobble) => {
         if (this.isTouchingWall(bobble)) {
@@ -180,7 +187,7 @@ export class Level_01 {
     });
 
     clusters.forEach((cluster) => {
-      const fixed = cluster.some((bobble) => !bobble.body.moves);
+      const fixed = Array.from(cluster).some((bobble) => !bobble.body.moves);
       if (fixed) {
         cluster.forEach((bobble) => {
           bobble.setMoves(false);
@@ -188,52 +195,32 @@ export class Level_01 {
       } else {
         cluster.forEach((bobble) => {
           bobble.setMoves(true);
-          bobble.body.setAllowGravity(true);
-          this.bobbleGroup.remove(bobble);
-        });
-        this.scene.tweens.add({
-          targets: cluster,
-          alpha: 0,
-          duration: 1000,
-          ease: Phaser.Math.Easing.Quadratic.In,
-          onComplete: () => {
-            cluster.forEach((bobble) => {
-              bobble.destroy();
-            });
-          },
         });
       }
     });
   }
 
-  private getBobbleClusters(): Bobble[][] {
-    const bobbles = this.bobbleGroup.getChildren().filter((bobble) => bobble instanceof Bobble);
-    const visited = new Set<Bobble>();
-    const clusters: Bobble[][] = [];
-
-    const findCluster = (bobble: Bobble, cluster: Bobble[]) => {
-      if (visited.has(bobble)) return;
-      visited.add(bobble);
-      cluster.push(bobble);
-
-      bobbles.forEach((other) => {
-        const thresholdSq = (bobble.body.radius + other.body.radius) ** 2 + BOBBLE_COLLISION_PADDING ** 2;
-        const distance = Phaser.Math.Distance.BetweenPointsSquared(bobble, other);
-        if (distance <= thresholdSq) {
-          findCluster(other, cluster);
-        }
-      });
-    };
-
-    bobbles.forEach((bobble) => {
-      if (visited.has(bobble)) return;
-
-      const cluster: Bobble[] = [];
-      findCluster(bobble, cluster);
-      clusters.push(cluster);
+  private cleanFloatingBobbles() {
+    const completed = this.bobbleGroup
+      .getChildren()
+      .filter((bobble) => bobble instanceof Bobble)
+      .filter((bobble) => bobble.body.moves);
+    completed.forEach((bobble) => {
+      this.bobbleGroup.remove(bobble);
     });
 
-    return clusters;
+    this.scene.tweens.add({
+      targets: completed,
+      alpha: 0,
+      y: "+=160",
+      duration: 1000,
+      ease: Phaser.Math.Easing.Quadratic.In,
+      onComplete: () => {
+        completed.forEach((bobble) => {
+          bobble.destroy();
+        });
+      },
+    });
   }
 }
 

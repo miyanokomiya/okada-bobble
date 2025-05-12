@@ -1,6 +1,7 @@
 import { Bobble } from "../pawns/bobbles/Bobble";
+import { BOBBLE_SPEED } from "./settings";
 
-export const BOBBLE_COLLISION_PADDING = 2;
+export const BOBBLE_COLLISION_PADDING = BOBBLE_SPEED / 60;
 
 export function stickBallToBall(a: Bobble, b: Bobble): boolean {
   const distanceSq = Phaser.Math.Distance.BetweenPointsSquared(a, b);
@@ -70,7 +71,7 @@ function checkWallCollision(ball: Bobble, wall: [Phaser.Math.Vector2, Phaser.Mat
   const distanceSq = Phaser.Math.Distance.BetweenPointsSquared(ballCenter, closestPoint);
   const radiusSq = ball.body.radius ** 2;
 
-  const extra = ball.body.velocity.lengthSq() > 0 ? 8 ** 2 : 0;
+  const extra = ball.body.velocity.lengthSq() > 0 ? BOBBLE_COLLISION_PADDING ** 2 : 0;
   if (distanceSq >= radiusSq + extra) return;
 
   const normalRaw = ballCenter.clone().subtract(closestPoint);

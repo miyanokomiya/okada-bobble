@@ -1,6 +1,6 @@
 import Phaser from "phaser";
 
-const TURRET_ANGLE_RANGE = 60;
+const TURRET_ANGLE_RANGE = 80;
 
 export class Turret extends Phaser.GameObjects.Container {
   private sprite_top: Phaser.GameObjects.Sprite;

@@ -53,7 +53,7 @@ export class BobbleMagazine extends Phaser.GameObjects.Container {
     const seed = Phaser.Math.Between(1, 4);
     const bobble = createBobble(this.scene, x - BOBBLE_RADIUS, 0, {
       label: seed % 2 === 0 ? "oka" : "da",
-      color: seed as any,
+      color: seed % 2 as any,
     });
     this.bobbles.push(bobble);
     this.add(bobble);
