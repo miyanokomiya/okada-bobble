@@ -6,7 +6,7 @@ export const BOBBLE_COLLISION_PADDING = BOBBLE_SPEED / 60;
 export function stickBallToBall(a: Bobble, b: Bobble): boolean {
   const distanceSq = Phaser.Math.Distance.BetweenPointsSquared(a, b);
   const desiredDistance = a.body.radius + b.body.radius;
-  const thresholdSq = desiredDistance ** 2 + BOBBLE_COLLISION_PADDING ** 2;
+  const thresholdSq = desiredDistance ** 2;
   if (distanceSq >= thresholdSq) return false;
 
   if (a.body.moves) {

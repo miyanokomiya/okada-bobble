@@ -1,5 +1,5 @@
 export type BOBBLE_LABEL = "oka" | "da";
-export type BOBBLE_COLOR = 1 | 2 | 3 | 4;
+export type BOBBLE_COLOR = 0 | 1 | 2 | 3 | 4;
 
 export function getBobbleTexture(label: BOBBLE_LABEL): { texture: string; frame: number } {
   switch (label) {

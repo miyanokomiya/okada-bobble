@@ -1,13 +1,13 @@
 import { InputComponent } from "../components/InputComponent";
 import { RuleComponent } from "../components/rules/RuleComponent";
 import { BobbleMagazine } from "../pawns/BobbleMagazine";
-import { Bobble } from "../pawns/bobbles/Bobble";
+import { Bobble, BOBBLE_RADIUS } from "../pawns/bobbles/Bobble";
 import { createBobble } from "../pawns/bobbles/bobbleFactory";
 import { Turret } from "../pawns/Turret";
 import { bounceBallAtWall, stickBallToBall, stickBallToWall } from "../utils/physics";
 import { BOBBLE_SPEED } from "../utils/settings";
 
-const WALL_THICKNESS = 30;
+const WALL_THICKNESS = 32;
 
 export class Level_01 {
   private turret!: Turret;
@@ -17,6 +17,7 @@ export class Level_01 {
   private bobbleMagazine!: BobbleMagazine;
   private loadedBobble: Bobble | undefined;
   private ruleComponent: RuleComponent = new RuleComponent();
+  private firstLineType: 0 | 1 = 0;
 
   constructor(public scene: Phaser.Scene) {}
 
@@ -80,6 +81,7 @@ export class Level_01 {
     });
     this.bobbleMagazine.reload();
 
+    this.alignBobbles();
     this.resetBobbleMoves();
   }
 
@@ -100,6 +102,23 @@ export class Level_01 {
     }
   }
 
+  private alignBobbles() {
+    const originX = WALL_THICKNESS + BOBBLE_RADIUS + (this.firstLineType === 0 ? 0 : BOBBLE_RADIUS);
+    const originY = WALL_THICKNESS + BOBBLE_RADIUS;
+    const unitX = BOBBLE_RADIUS * 2;
+    const unitY = Math.sqrt(3) * BOBBLE_RADIUS;
+
+    const bobbles = this.bobbleGroup.getChildren().filter((b) => b instanceof Bobble) as Bobble[];
+    bobbles.forEach((bobble) => {
+      const yIndex = Math.round((bobble.y - originY) / unitY);
+      const noPadding = yIndex % 2 === this.firstLineType;
+
+      const adjustedOriginX = noPadding ? originX : originX + unitX / 2;
+      const xIndex = Math.round((bobble.x - adjustedOriginX) / unitX);
+      bobble.setPosition(xIndex * unitX + adjustedOriginX, yIndex * unitY + originY);
+    });
+  }
+
   private isShooting() {
     return this.shootingGroup.getLength() > 0;
   }
@@ -107,6 +126,7 @@ export class Level_01 {
   private finishShooting(bobble: Bobble) {
     this.shootingGroup.remove(bobble);
     this.bobbleGroup.add(bobble);
+    this.alignBobbles();
 
     this.ruleComponent.setBobbles(this.bobbleGroup.getChildren().filter((b) => b instanceof Bobble) as Bobble[]);
     const result = this.ruleComponent.landBobble(bobble);
