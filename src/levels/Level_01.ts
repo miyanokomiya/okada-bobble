@@ -1,7 +1,8 @@
 import { InputComponent } from "../components/InputComponent";
-import { Bobble, BOBBLE_COLLISION_PADDING } from "../pawns/bobbles/Bobble";
+import { Bobble } from "../pawns/bobbles/Bobble";
 import { createBobble } from "../pawns/bobbles/bobbleFactory";
 import { Turret } from "../pawns/bobbles/Turret";
+import { bounceBallAtWall, stickBallToBall, stickBallToWall, BOBBLE_COLLISION_PADDING } from "../utils/physics";
 
 const WALL_THICKNESS = 20;
 
@@ -9,7 +10,6 @@ export class Level_01 {
   private turret!: Turret;
   private inputComponent!: InputComponent;
   private bobbleGroup!: Phaser.GameObjects.Group;
-  private bobbleOverlapGroup!: Phaser.GameObjects.Group;
   private shootCount = 0;
 
   constructor(public scene: Phaser.Scene) {}
@@ -19,9 +19,14 @@ export class Level_01 {
 
     // Add static walls along the viewport outline
     const { width, height } = this.scene.scale;
+
+    const ceiling = this.scene.add.rectangle(width / 2, WALL_THICKNESS / 2, width, WALL_THICKNESS, 0x000000);
+    this.scene.physics.add.existing(ceiling, true);
+
+    const floor = this.scene.add.rectangle(width / 2, height - WALL_THICKNESS / 2, width, WALL_THICKNESS, 0x000000);
+    this.scene.physics.add.existing(floor, true);
+
     const walls = this.scene.physics.add.staticGroup([
-      this.scene.add.rectangle(width / 2, WALL_THICKNESS / 2, width, WALL_THICKNESS, 0x000000),
-      this.scene.add.rectangle(width / 2, height - WALL_THICKNESS / 2, width, WALL_THICKNESS, 0x000000),
       this.scene.add.rectangle(WALL_THICKNESS / 2, height / 2, WALL_THICKNESS, height, 0x000000),
       this.scene.add.rectangle(width - WALL_THICKNESS / 2, height / 2, WALL_THICKNESS, height, 0x000000),
     ]);
@@ -42,24 +47,26 @@ export class Level_01 {
       this.bobbleGroup.add(bobble);
     });
 
-    this.bobbleOverlapGroup = this.scene.add.group(
-      this.bobbleGroup.getChildren().map((bobble) => (bobble as Bobble).overlapObject),
-    );
+    this.scene.physics.add.collider(this.bobbleGroup, floor);
 
-    this.scene.physics.add.collider(walls, this.bobbleGroup);
+    this.scene.physics.add.overlap(this.bobbleGroup, ceiling, (bobble, wall) => {
+      if (bobble instanceof Bobble) {
+        if (stickBallToWall(bobble, wall as any)) {
+          bobble.setMoves(false);
+        }
+      }
+    });
+
+    this.scene.physics.add.overlap(this.bobbleGroup, walls, (bobble, wall) => {
+      if (bobble instanceof Bobble) {
+        bounceBallAtWall(bobble, wall as any);
+      }
+    });
+
     this.scene.physics.add.overlap(this.bobbleGroup, this.bobbleGroup, (a, b) => {
       if (a instanceof Bobble && b instanceof Bobble) {
         if (!a.body.moves || !b.body.moves) {
-          const distance = Phaser.Math.Distance.BetweenPoints(a, b);
-          const desiredDistance = a.body.radius + b.body.radius;
-          if (distance <= desiredDistance + BOBBLE_COLLISION_PADDING) {
-            if (a.body.moves) {
-              const v = new Phaser.Math.Vector2(a.x, a.y).subtract(new Phaser.Math.Vector2(b.x, b.y)).normalize();
-              a.setPosition(b.x + v.x * desiredDistance, b.y + v.y * desiredDistance);
-            } else if (b.body.moves) {
-              const v = new Phaser.Math.Vector2(b.x, b.y).subtract(new Phaser.Math.Vector2(a.x, a.y)).normalize();
-              b.setPosition(a.x + v.x * desiredDistance, a.y + v.y * desiredDistance);
-            }
+          if (stickBallToBall(a, b)) {
             a.setMoves(false);
             b.setMoves(false);
           }
@@ -67,15 +74,8 @@ export class Level_01 {
       }
     });
 
-    this.scene.physics.add.overlap(walls, this.bobbleOverlapGroup, (a, b) => {
-      const parentA = (a as Phaser.GameObjects.GameObject).parentContainer;
-      const parentB = (b as Phaser.GameObjects.GameObject).parentContainer;
-      [parentA, parentB].forEach((parent) => {
-        if (parent instanceof Bobble) {
-          parent.setMoves(false);
-        }
-      });
-    });
+    this.resetBobbleMoves();
+    this.updateBobbleMoves();
   }
 
   update(_time: number, delta: number): void {
@@ -99,21 +99,13 @@ export class Level_01 {
   private shoot() {
     const angle = this.turret.getTurretAngle();
     const from = this.turret.getTurretTopPosition();
-
-    // Create a new bobble
     const newBobble = createBobble(this.scene, from.x, from.y, { texture: this.shootCount % 2 === 0 ? "oka" : "da" });
-
-    // Add physics to the bobble and set its velocity
     this.scene.physics.add.existing(newBobble);
     const body = newBobble.body as Phaser.Physics.Arcade.Body;
-    const speed = 300;
+    const speed = 500;
     body.setVelocity(Math.cos(Phaser.Math.DegToRad(angle)) * speed, Math.sin(Phaser.Math.DegToRad(angle)) * speed);
-
-    // Add the bobble to the scene and groups
     this.scene.add.existing(newBobble);
     this.bobbleGroup.add(newBobble);
-    this.bobbleOverlapGroup.add(newBobble.overlapObject);
-
     this.shootCount++;
   }
 
@@ -169,8 +161,9 @@ export class Level_01 {
       cluster.push(bobble);
 
       bobbles.forEach((other) => {
-        const distance = Phaser.Math.Distance.BetweenPoints(bobble, other);
-        if (distance <= bobble.body.radius + other.body.radius + BOBBLE_COLLISION_PADDING) {
+        const thresholdSq = (bobble.body.radius + other.body.radius) ** 2 + BOBBLE_COLLISION_PADDING ** 2;
+        const distance = Phaser.Math.Distance.BetweenPointsSquared(bobble, other);
+        if (distance <= thresholdSq) {
           findCluster(other, cluster);
         }
       });
