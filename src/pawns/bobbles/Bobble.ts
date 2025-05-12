@@ -1,18 +1,25 @@
-import { nanoid } from "nanoid";
 import Phaser from "phaser";
+import { BOBBLE_COLOR, BOBBLE_LABEL, getBobbleTexture, getBobbleThemaColor } from "../../utils/settings";
 
-const BOBBLE_RADIUS = 16;
+export const BOBBLE_RADIUS = 16;
 
 export class Bobble extends Phaser.GameObjects.Container {
   declare body: Phaser.Physics.Arcade.Body;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, texture: string, frame?: number) {
-    const background = scene.add.circle(0, 0, BOBBLE_RADIUS, 0xffffff);
-    const sprite = scene.add.sprite(0, 0, texture, frame);
+  constructor(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    public label: BOBBLE_LABEL,
+    public color: BOBBLE_COLOR,
+  ) {
+    const background = scene.add.circle(0, 0, BOBBLE_RADIUS, getBobbleThemaColor(color));
+    const textureInfo = getBobbleTexture(label);
+    const sprite = scene.add.sprite(0, 0, textureInfo.texture, textureInfo.frame);
 
     super(scene, x, y, [background, sprite]);
     scene.add.existing(this);
-    this.name = nanoid();
+    this.name = `bobble_${Phaser.Utils.String.UUID()}`;
 
     // Add the primary physics body
     scene.physics.add.existing(this);

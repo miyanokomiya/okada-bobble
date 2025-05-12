@@ -1,7 +1,8 @@
 import { InputComponent } from "../components/InputComponent";
+import { BobbleMagazine } from "../pawns/BobbleMagazine";
 import { Bobble } from "../pawns/bobbles/Bobble";
 import { createBobble } from "../pawns/bobbles/bobbleFactory";
-import { Turret } from "../pawns/bobbles/Turret";
+import { Turret } from "../pawns/Turret";
 import { bounceBallAtWall, stickBallToBall, stickBallToWall, BOBBLE_COLLISION_PADDING } from "../utils/physics";
 
 const WALL_THICKNESS = 20;
@@ -10,7 +11,8 @@ export class Level_01 {
   private turret!: Turret;
   private inputComponent!: InputComponent;
   private bobbleGroup!: Phaser.GameObjects.Group;
-  private shootCount = 0;
+  private bobbleMagazine!: BobbleMagazine;
+  private loadedBobble: Bobble | undefined;
 
   constructor(public scene: Phaser.Scene) {}
 
@@ -35,13 +37,14 @@ export class Level_01 {
 
     // Create a group for Bobbles
     this.bobbleGroup = this.scene.add.group();
+    this.bobbleMagazine = new BobbleMagazine(this.scene, width / 2 - 180, height - WALL_THICKNESS - 30);
 
     // Add Bobbles to the group
     const bobbles = [
-      createBobble(this.scene, 400, WALL_THICKNESS + 16, { texture: "oka" }),
-      createBobble(this.scene, 400, WALL_THICKNESS + 16 * 3, { texture: "da" }),
-      createBobble(this.scene, 400, WALL_THICKNESS + 16 * 5, { texture: "da" }),
-      createBobble(this.scene, 200, WALL_THICKNESS + 16 * 10, { texture: "da" }),
+      createBobble(this.scene, 400, WALL_THICKNESS + 16, { label: "oka", color: 1 }),
+      createBobble(this.scene, 400, WALL_THICKNESS + 16 * 3, { label: "da", color: 2 }),
+      createBobble(this.scene, 400, WALL_THICKNESS + 16 * 5, { label: "da", color: 3 }),
+      createBobble(this.scene, 600, WALL_THICKNESS + 16 * 10, { label: "da", color: 4 }),
     ] as Bobble[];
     bobbles.forEach((bobble) => {
       this.bobbleGroup.add(bobble);
@@ -74,6 +77,11 @@ export class Level_01 {
       }
     });
 
+    this.bobbleMagazine.onReloaded(() => {
+      this.reloadBobble();
+    });
+    this.bobbleMagazine.reload();
+
     this.resetBobbleMoves();
     this.updateBobbleMoves();
   }
@@ -88,7 +96,7 @@ export class Level_01 {
       this.turret.rotateTopBy((60 / 1000) * delta);
     }
     if (this.inputComponent.justPressedKeys.space) {
-      this.shoot();
+      this.shootBobble();
     }
     if (this.inputComponent.justPressedKeys.down) {
       this.resetBobbleMoves();
@@ -96,17 +104,41 @@ export class Level_01 {
     }
   }
 
-  private shoot() {
+  private shootBobble() {
     const angle = this.turret.getTurretAngle();
-    const from = this.turret.getTurretTopPosition();
-    const newBobble = createBobble(this.scene, from.x, from.y, { texture: this.shootCount % 2 === 0 ? "oka" : "da" });
+    const newBobble = this.loadedBobble;
+    if (!newBobble) return;
+
+    this.loadedBobble = undefined;
     this.scene.physics.add.existing(newBobble);
     const body = newBobble.body as Phaser.Physics.Arcade.Body;
     const speed = 500;
     body.setVelocity(Math.cos(Phaser.Math.DegToRad(angle)) * speed, Math.sin(Phaser.Math.DegToRad(angle)) * speed);
     this.scene.add.existing(newBobble);
     this.bobbleGroup.add(newBobble);
-    this.shootCount++;
+
+    this.reloadBobble();
+  }
+
+  private reloadBobble() {
+    if (!this.bobbleMagazine.isReloaded()) return;
+    if (this.loadedBobble) return;
+
+    this.loadedBobble = this.bobbleMagazine.popBobble();
+    if (!this.loadedBobble) return;
+
+    const center = this.turret.getTurretCenterPosition();
+    this.scene.tweens.add({
+      targets: this.loadedBobble,
+      x: center.x,
+      y: center.y,
+      duration: 200,
+      ease: "linear",
+      onComplete: () => {
+      },
+    });
+
+    this.bobbleMagazine.reload();
   }
 
   private updateBobbleMoves() {

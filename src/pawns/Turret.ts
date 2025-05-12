@@ -7,7 +7,7 @@ export class Turret extends Phaser.GameObjects.Container {
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     const sprite_base = scene.add.sprite(0, 0, "turret_base");
-    const sprite_top = scene.add.sprite(0, 0, "turret_top");
+    const sprite_top = scene.add.sprite(0, -32, "turret_top");
     sprite_base.setOrigin(0.5, 1);
     sprite_top.setOrigin(0.5, 1);
 
@@ -31,11 +31,13 @@ export class Turret extends Phaser.GameObjects.Container {
     return this.sprite_top.angle - 90;
   }
 
+  getTurretCenterPosition(): Phaser.Math.Vector2 {
+    return new Phaser.Math.Vector2(this.sprite_top.x, this.sprite_top.y).add(this);
+  }
+
   getTurretTopPosition(): Phaser.Math.Vector2 {
     const r = Phaser.Math.DegToRad(this.getTurretAngle());
     const radius = this.sprite_top.displayHeight;
-    return new Phaser.Math.Vector2(this.sprite_top.x, this.sprite_top.y)
-      .add(this)
-      .add(new Phaser.Math.Vector2(radius, 0).rotate(r));
+    return this.getTurretCenterPosition().add(new Phaser.Math.Vector2(radius, 0).rotate(r));
   }
 }

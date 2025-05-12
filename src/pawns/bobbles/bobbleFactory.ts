@@ -1,11 +1,12 @@
+import { BOBBLE_COLOR, BOBBLE_LABEL } from "../../utils/settings";
 import { Bobble } from "./Bobble";
 
 export type BobbleSettings = {
-  texture: "oka" | "da";
+  label: BOBBLE_LABEL;
+  color: BOBBLE_COLOR;
 };
 
 export function createBobble(scene: Phaser.Scene, x: number, y: number, settings: BobbleSettings): Bobble {
-  const frame = settings.texture === "oka" ? 0 : 1;
-  const bobble = new Bobble(scene, x, y, "bobbles", frame);
+  const bobble = new Bobble(scene, x, y, settings.label, settings.color);
   return bobble;
 }
