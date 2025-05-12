@@ -59,7 +59,7 @@ export class BobbleMagazine extends Phaser.GameObjects.Container {
     this.add(bobble);
 
     const duration = 200;
-    const cooltime = 100;
+    const cooltime = 20;
     this.bobbles.toReversed().forEach((bobble, i) => {
       if (i === 0) {
         bobble.scaleX = 0.1;

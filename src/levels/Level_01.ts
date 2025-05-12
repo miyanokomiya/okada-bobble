@@ -10,6 +10,7 @@ const WALL_THICKNESS = 20;
 export class Level_01 {
   private turret!: Turret;
   private inputComponent!: InputComponent;
+  private shootingGroup!: Phaser.GameObjects.Group;
   private bobbleGroup!: Phaser.GameObjects.Group;
   private bobbleMagazine!: BobbleMagazine;
   private loadedBobble: Bobble | undefined;
@@ -36,6 +37,7 @@ export class Level_01 {
     this.turret = new Turret(this.scene, width / 2, height - WALL_THICKNESS);
 
     // Create a group for Bobbles
+    this.shootingGroup = this.scene.add.group();
     this.bobbleGroup = this.scene.add.group();
     this.bobbleMagazine = new BobbleMagazine(this.scene, width / 2 - 180, height - WALL_THICKNESS - 30);
 
@@ -51,29 +53,22 @@ export class Level_01 {
     });
 
     this.scene.physics.add.collider(this.bobbleGroup, floor);
+    this.scene.physics.add.collider(this.shootingGroup, floor);
+    this.scene.physics.add.overlap(this.shootingGroup, walls, onOverlapBobbleAndWall);
+    this.scene.physics.add.overlap(this.shootingGroup, ceiling, (bobble, celing) => {
+      if (!(bobble instanceof Bobble)) return;
 
-    this.scene.physics.add.overlap(this.bobbleGroup, ceiling, (bobble, wall) => {
-      if (bobble instanceof Bobble) {
-        if (stickBallToWall(bobble, wall as any)) {
-          bobble.setMoves(false);
-        }
+      onOverlapBobbleAndCeiling(bobble, celing);
+      if (!bobble.body.moves) {
+        this.finishShooting(bobble);
       }
     });
+    this.scene.physics.add.overlap(this.shootingGroup, this.bobbleGroup, (a, b) => {
+      if (!(a instanceof Bobble)) return;
 
-    this.scene.physics.add.overlap(this.bobbleGroup, walls, (bobble, wall) => {
-      if (bobble instanceof Bobble) {
-        bounceBallAtWall(bobble, wall as any);
-      }
-    });
-
-    this.scene.physics.add.overlap(this.bobbleGroup, this.bobbleGroup, (a, b) => {
-      if (a instanceof Bobble && b instanceof Bobble) {
-        if (!a.body.moves || !b.body.moves) {
-          if (stickBallToBall(a, b)) {
-            a.setMoves(false);
-            b.setMoves(false);
-          }
-        }
+      onOverlapBobbleAndBobble(a, b);
+      if (!a.body.moves) {
+        this.finishShooting(a);
       }
     });
 
@@ -104,7 +99,18 @@ export class Level_01 {
     }
   }
 
+  private isShooting() {
+    return this.shootingGroup.getLength() > 0;
+  }
+
+  private finishShooting(bobble: Bobble) {
+    this.shootingGroup.remove(bobble);
+    this.bobbleGroup.add(bobble);
+  }
+
   private shootBobble() {
+    if (this.isShooting()) return;
+
     const angle = this.turret.getTurretAngle();
     const newBobble = this.loadedBobble;
     if (!newBobble) return;
@@ -115,7 +121,7 @@ export class Level_01 {
     const speed = 500;
     body.setVelocity(Math.cos(Phaser.Math.DegToRad(angle)) * speed, Math.sin(Phaser.Math.DegToRad(angle)) * speed);
     this.scene.add.existing(newBobble);
-    this.bobbleGroup.add(newBobble);
+    this.shootingGroup.add(newBobble);
 
     this.reloadBobble();
   }
@@ -134,8 +140,7 @@ export class Level_01 {
       y: center.y,
       duration: 200,
       ease: "linear",
-      onComplete: () => {
-      },
+      onComplete: () => {},
     });
 
     this.bobbleMagazine.reload();
@@ -176,9 +181,28 @@ export class Level_01 {
 
     clusters.forEach((cluster) => {
       const fixed = cluster.some((bobble) => !bobble.body.moves);
-      cluster.forEach((bobble) => {
-        bobble.setMoves(!fixed);
-      });
+      if (fixed) {
+        cluster.forEach((bobble) => {
+          bobble.setMoves(false);
+        });
+      } else {
+        cluster.forEach((bobble) => {
+          bobble.setMoves(true);
+          bobble.body.setAllowGravity(true);
+          this.bobbleGroup.remove(bobble);
+        });
+        this.scene.tweens.add({
+          targets: cluster,
+          alpha: 0,
+          duration: 1000,
+          ease: Phaser.Math.Easing.Quadratic.In,
+          onComplete: () => {
+            cluster.forEach((bobble) => {
+              bobble.destroy();
+            });
+          },
+        });
+      }
     });
   }
 
@@ -210,5 +234,30 @@ export class Level_01 {
     });
 
     return clusters;
+  }
+}
+
+function onOverlapBobbleAndCeiling(bobble: any, ceiling: any) {
+  if (bobble instanceof Bobble) {
+    if (stickBallToWall(bobble, ceiling)) {
+      bobble.setMoves(false);
+    }
+  }
+}
+
+function onOverlapBobbleAndWall(bobble: any, wall: any) {
+  if (bobble instanceof Bobble) {
+    bounceBallAtWall(bobble, wall as any);
+  }
+}
+
+function onOverlapBobbleAndBobble(a: any, b: any) {
+  if (a instanceof Bobble && b instanceof Bobble) {
+    if (!a.body.moves || !b.body.moves) {
+      if (stickBallToBall(a, b)) {
+        a.setMoves(false);
+        b.setMoves(false);
+      }
+    }
   }
 }
