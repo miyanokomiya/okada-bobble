@@ -7,9 +7,7 @@ import { createBobble } from "../pawns/bobbles/bobbleFactory";
 import { TrajectoryPath } from "../pawns/TrajectoryPath";
 import { Turret } from "../pawns/Turret";
 import { bounceBallAtWall, stickBallToBall, stickBallToWall } from "../utils/physics";
-import { BOBBLE_SPEED } from "../utils/settings";
-
-const WALL_THICKNESS = 32;
+import { BOBBLE_COLOR, BOBBLE_LABEL, BOBBLE_SPEED, BobbleSrc } from "../utils/settings";
 
 export class Level_01 {
   private turret!: Turret;
@@ -24,43 +22,68 @@ export class Level_01 {
   private trajectoryPath!: TrajectoryPath;
   private isLoading: boolean = false;
 
-  constructor(public scene: Phaser.Scene) {}
+  private soundBobbleShoot: Phaser.Sound.BaseSound;
+  private soundBobbleLand: Phaser.Sound.BaseSound;
+  private soundBobbleComplete: Phaser.Sound.BaseSound;
+
+  protected wallThickness = 32;
+  protected ceilingThickness = 32;
+  protected floorThickness = 32;
+  protected countInLine = 12; // should be equal or less than 20
+  protected lineCount = 16; // should be equal or less than 16
+
+  constructor(public scene: Phaser.Scene) {
+    this.soundBobbleShoot = scene.sound.add("bobble_shoot", { volume: 0.5 });
+    this.soundBobbleLand = scene.sound.add("bobble_land", { volume: 0.5 });
+    this.soundBobbleComplete = scene.sound.add("bobble_complete", { volume: 0.5 });
+
+    this.inputComponent = new InputComponent(this.scene);
+  }
 
   create() {
-    this.inputComponent = new InputComponent(this.scene);
-
     // Add static walls along the viewport outline
     const { width, height } = this.scene.scale;
+    this.wallThickness = (width - this.countInLine * BOBBLE_RADIUS * 2) / 2;
+    const linesHeight = this.lineCount * Math.sqrt(3) * BOBBLE_RADIUS;
+    const turretHeight = 100;
+    this.ceilingThickness = height - linesHeight - turretHeight;
+    const wallThickness = this.wallThickness;
 
     const ceilings = this.scene.physics.add.staticGroup([
-      this.scene.add.rectangle(width / 2, WALL_THICKNESS / 2, width, WALL_THICKNESS, 0x000000),
+      this.scene.add.rectangle(width / 2, this.ceilingThickness / 2, width, this.ceilingThickness, 0x000000),
     ]);
 
-    const floor = this.scene.add.rectangle(width / 2, height - WALL_THICKNESS / 2, width, WALL_THICKNESS, 0x000000);
+    const floor = this.scene.add.rectangle(
+      width / 2,
+      height - this.floorThickness / 2,
+      width,
+      this.floorThickness,
+      0x000000,
+    );
     this.scene.physics.add.existing(floor, true);
 
     const walls = this.scene.physics.add.staticGroup([
-      this.scene.add.rectangle(WALL_THICKNESS / 2, height / 2, WALL_THICKNESS, height, 0x000000),
-      this.scene.add.rectangle(width - WALL_THICKNESS / 2, height / 2, WALL_THICKNESS, height, 0x000000),
+      this.scene.add.rectangle(wallThickness / 2, height / 2, wallThickness, height, 0x000000),
+      this.scene.add.rectangle(width - wallThickness / 2, height / 2, wallThickness, height, 0x000000),
     ]);
 
     this.trajectoryComponent = new TrajectoryComponent(ceilings, walls);
 
-    this.turret = new Turret(this.scene, width / 2, height - WALL_THICKNESS);
+    this.turret = new Turret(this.scene, width / 2, height - this.floorThickness);
     this.trajectoryPath = new TrajectoryPath(this.scene);
 
     // Create a group for Bobbles
     this.shootingGroup = this.scene.add.group();
     this.bobbleGroup = this.scene.add.group();
-    this.bobbleMagazine = new BobbleMagazine(this.scene, width / 2 - 180, height - WALL_THICKNESS - 30, "123456");
+    this.bobbleMagazine = new BobbleMagazine(this.scene, width / 2 - 160, height - this.floorThickness - 22, "123456");
 
-    // Add Bobbles to the group
-    const bobbles = [
-      createBobble(this.scene, 400, WALL_THICKNESS + 16, { label: "oka", color: 1 }),
-      createBobble(this.scene, 400, WALL_THICKNESS + 16 * 3, { label: "da", color: 2 }),
-      createBobble(this.scene, 400, WALL_THICKNESS + 16 * 5, { label: "da", color: 3 }),
-      createBobble(this.scene, 600, WALL_THICKNESS + 16 * 10, { label: "da", color: 4 }),
-    ] as Bobble[];
+    const bobbles = this.getBobbleSrc().map((src) => {
+      const { x, y } = this.getBobblePositionFromCoordinates(src.x, src.y);
+      return createBobble(this.scene, x, y, {
+        label: src.label,
+        color: src.color,
+      });
+    });
     bobbles.forEach((bobble) => {
       this.bobbleGroup.add(bobble);
     });
@@ -112,9 +135,30 @@ export class Level_01 {
     this.updateTrajectory();
   }
 
+  protected getBobbleSrc(): BobbleSrc[] {
+    return [
+      { x: 6, y: 0, label: "oka", color: 1 },
+      { x: 7, y: 0, label: "da", color: 2 },
+      { x: 6, y: 1, label: "oka", color: 1 },
+      { x: 5, y: 1, label: "da", color: 2 },
+    ];
+  }
+
+  private getBobblePositionFromCoordinates(xIndex: number, yIndex: number) {
+    const originX = this.wallThickness + BOBBLE_RADIUS + (this.firstLineType === 0 ? 0 : BOBBLE_RADIUS);
+    const originY = this.ceilingThickness + BOBBLE_RADIUS;
+    const unitX = BOBBLE_RADIUS * 2;
+    const unitY = Math.sqrt(3) * BOBBLE_RADIUS;
+    const noPadding = yIndex % 2 === this.firstLineType;
+    const adjustedOriginX = noPadding ? originX : originX + unitX / 2;
+    const x = xIndex * unitX + adjustedOriginX;
+    const y = yIndex * unitY + originY;
+    return { x, y };
+  }
+
   private alignBobbles(animate = false) {
-    const originX = WALL_THICKNESS + BOBBLE_RADIUS + (this.firstLineType === 0 ? 0 : BOBBLE_RADIUS);
-    const originY = WALL_THICKNESS + BOBBLE_RADIUS;
+    const originX = this.wallThickness + BOBBLE_RADIUS + (this.firstLineType === 0 ? 0 : BOBBLE_RADIUS);
+    const originY = this.ceilingThickness + BOBBLE_RADIUS;
     const unitX = BOBBLE_RADIUS * 2;
     const unitY = Math.sqrt(3) * BOBBLE_RADIUS;
 
@@ -150,6 +194,7 @@ export class Level_01 {
     this.shootingGroup.remove(bobble);
     this.bobbleGroup.add(bobble);
     this.alignBobbles(true);
+    this.soundBobbleLand.play();
 
     // Have to delay to wait for the alignment animation
     this.scene.time.delayedCall(100, () => {
@@ -164,6 +209,7 @@ export class Level_01 {
         // Reset current bobble moves then clean floating bobbles
         this.resetBobbleMoves();
         this.cleanFloatingBobbles();
+        this.soundBobbleComplete.play();
       }
     });
   }
@@ -182,6 +228,7 @@ export class Level_01 {
     body.setVelocity(Math.cos(Phaser.Math.DegToRad(angle)) * speed, Math.sin(Phaser.Math.DegToRad(angle)) * speed);
     this.scene.add.existing(newBobble);
     this.shootingGroup.add(newBobble);
+    this.soundBobbleShoot.play();
 
     this.reloadBobble();
   }
@@ -225,10 +272,10 @@ export class Level_01 {
     const { x, y } = bobble;
     const radius = bobble.body.radius;
     return (
-      y - radius <= WALL_THICKNESS ||
-      y + radius >= this.scene.scale.height - WALL_THICKNESS ||
-      x - radius <= WALL_THICKNESS ||
-      x + radius >= this.scene.scale.width - WALL_THICKNESS
+      y - radius <= this.wallThickness ||
+      y + radius >= this.scene.scale.height - this.wallThickness ||
+      x - radius <= this.wallThickness ||
+      x + radius >= this.scene.scale.width - this.wallThickness
     );
   }
 

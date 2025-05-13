@@ -28,3 +28,5 @@ export function getBobbleThemaColor(color: BOBBLE_COLOR): number {
 }
 
 export const BOBBLE_SPEED = 800;
+
+export type BobbleSrc = { x: number; y: number; label: BOBBLE_LABEL; color: BOBBLE_COLOR };
