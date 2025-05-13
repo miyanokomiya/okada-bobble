@@ -1,5 +1,4 @@
 import { Bobble } from "../../pawns/bobbles/Bobble";
-import { BOBBLE_COLLISION_PADDING } from "../../utils/physics";
 
 export class RuleComponent {
   private bobbles: Bobble[] = [];
@@ -28,6 +27,15 @@ export class RuleComponent {
 
     const sameColorBobbles = Array.from(cluster).filter((b) => b.color === bobble.color);
 
+    // Check if the bobble lands on one with another label
+    const isPaired = sameColorBobbles.some((b) => {
+      if (bobble.label === b.label) return false;
+
+      const distanceSq = Phaser.Math.Distance.BetweenPointsSquared(bobble, b);
+      return distanceSq <= (bobble.body.radius + b.body.radius) ** 2 + 1;
+    });
+    if (!isPaired) return;
+
     const chained = new Set<Bobble>();
     const remained = new Set<Bobble>(sameColorBobbles);
     chained.add(bobble);
@@ -37,7 +45,7 @@ export class RuleComponent {
       let changed = false;
       for (const a of chained) {
         for (const b of remained) {
-          const thresholdSq = (a.body.radius + b.body.radius) ** 2 + BOBBLE_COLLISION_PADDING ** 2;
+          const thresholdSq = (a.body.radius + b.body.radius) ** 2 + 1;
           const distanceSq = Phaser.Math.Distance.BetweenPointsSquared(a, b);
           if (distanceSq <= thresholdSq) {
             chained.add(b);
@@ -65,7 +73,7 @@ export class RuleComponent {
       cluster.add(bobble);
 
       bobbles.forEach((other) => {
-        const thresholdSq = (bobble.body.radius + other.body.radius) ** 2 + BOBBLE_COLLISION_PADDING ** 2;
+        const thresholdSq = (bobble.body.radius + other.body.radius) ** 2 + 1;
         const distance = Phaser.Math.Distance.BetweenPointsSquared(bobble, other);
         if (distance <= thresholdSq) {
           findCluster(other, cluster);

@@ -9,11 +9,23 @@ export class BobbleMagazine extends Phaser.GameObjects.Container {
   private bobbles: Bobble[] = [];
   private reloading = false;
   private eventEmitter: Phaser.Events.EventEmitter = new Phaser.Events.EventEmitter();
+  private rng: Phaser.Math.RandomDataGenerator;
 
-  constructor(scene: Phaser.Scene, x: number, y: number) {
+  constructor(scene: Phaser.Scene, x: number, y: number, seed?: string) {
     const background = scene.add.rectangle(0, 0, width, BOBBLE_RADIUS * 2 + PADDING * 2, 0xaaaaaa);
     super(scene, x, y, [background]);
     scene.add.existing(this);
+
+    this.rng = new Phaser.Math.RandomDataGenerator(seed);
+  }
+
+  private createBobble(x: number) {
+    const labelSeed = this.rng.between(0, 1);
+    const colorSeed = this.rng.between(1, 4);
+    return createBobble(this.scene, x, 0, {
+      label: labelSeed === 0 ? "oka" : "da",
+      color: colorSeed as any,
+    });
   }
 
   fill() {
@@ -22,11 +34,7 @@ export class BobbleMagazine extends Phaser.GameObjects.Container {
 
     let x = -width / 2 + BOBBLE_RADIUS + PADDING;
     for (let i = currentCount; i < MAX_COUNT; i++) {
-      const seed = Phaser.Math.Between(1, 4);
-      const bobble = createBobble(this.scene, x, 0, {
-        label: seed % 2 === 0 ? "oka" : "da",
-        color: seed as any,
-      });
+      const bobble = this.createBobble(x);
       this.bobbles.push(bobble);
       this.add(bobble);
     }
@@ -50,11 +58,7 @@ export class BobbleMagazine extends Phaser.GameObjects.Container {
     this.reloading = true;
     let x = -width / 2 + BOBBLE_RADIUS + PADDING;
 
-    const seed = Phaser.Math.Between(1, 4);
-    const bobble = createBobble(this.scene, x - BOBBLE_RADIUS, 0, {
-      label: seed % 2 === 0 ? "oka" : "da",
-      color: seed as any,
-    });
+    const bobble = this.createBobble(x - BOBBLE_RADIUS);
     this.bobbles.push(bobble);
     this.add(bobble);
 

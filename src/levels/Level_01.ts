@@ -52,7 +52,7 @@ export class Level_01 {
     // Create a group for Bobbles
     this.shootingGroup = this.scene.add.group();
     this.bobbleGroup = this.scene.add.group();
-    this.bobbleMagazine = new BobbleMagazine(this.scene, width / 2 - 180, height - WALL_THICKNESS - 30);
+    this.bobbleMagazine = new BobbleMagazine(this.scene, width / 2 - 180, height - WALL_THICKNESS - 30, "123456");
 
     // Add Bobbles to the group
     const bobbles = [
@@ -151,10 +151,11 @@ export class Level_01 {
     this.bobbleGroup.add(bobble);
     this.alignBobbles(true);
 
-    this.ruleComponent.setBobbles(this.bobbleGroup.getChildren().filter((b) => b instanceof Bobble) as Bobble[]);
-    const result = this.ruleComponent.landBobble(bobble);
-    if (result.completed) {
-      this.scene.time.delayedCall(100, () => {
+    // Have to delay to wait for the alignment animation
+    this.scene.time.delayedCall(100, () => {
+      this.ruleComponent.setBobbles(this.bobbleGroup.getChildren().filter((b) => b instanceof Bobble) as Bobble[]);
+      const result = this.ruleComponent.landBobble(bobble);
+      if (result.completed) {
         result.completed?.forEach((bobble) => {
           bobble.setMoves(true);
         });
@@ -163,8 +164,8 @@ export class Level_01 {
         // Reset current bobble moves then clean floating bobbles
         this.resetBobbleMoves();
         this.cleanFloatingBobbles();
-      });
-    }
+      }
+    });
   }
 
   private shootBobble() {
