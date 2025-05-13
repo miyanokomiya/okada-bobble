@@ -1,9 +1,10 @@
 import Phaser from "phaser";
+import { BOBBLE_RADIUS } from "./bobbles/Bobble";
 
 export class TrajectoryPath extends Phaser.GameObjects.Container {
   private polyline: Phaser.GameObjects.Graphics;
 
-  constructor(scene: Phaser.Scene, x: number, y: number) {
+  constructor(scene: Phaser.Scene) {
     super(scene, 0, 0);
     this.polyline = scene.add.graphics();
     this.add(this.polyline);
@@ -12,8 +13,15 @@ export class TrajectoryPath extends Phaser.GameObjects.Container {
 
   drawPath(points: Phaser.Math.Vector2[], color: number = 0xffffff, lineWidth: number = 3): void {
     this.polyline.clear();
-    this.polyline.lineStyle(lineWidth, color);
 
+    this.polyline.lineStyle(lineWidth / 2, color);
+    for (let i = 1; i < points.length; i++) {
+      this.polyline.beginPath();
+      this.polyline.arc(points[i].x, points[i].y, BOBBLE_RADIUS, 0, Math.PI * 2);
+      this.polyline.strokePath();
+    }
+
+    this.polyline.lineStyle(lineWidth, color);
     if (points.length > 0) {
       this.polyline.beginPath();
       this.polyline.moveTo(points[0].x, points[0].y);

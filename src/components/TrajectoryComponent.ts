@@ -18,16 +18,36 @@ export class TrajectoryComponent {
   ) {}
 
   getTrajectoryPaths(bobble: Bobble, velocity: Phaser.Math.Vector2): Phaser.Math.Vector2[] {
-    const result = this.getTrajectoryToward(bobble, velocity);
-    if (!result) return [];
+    const paths: Phaser.Math.Vector2[] = [];
+    const bobbleCenter = new Phaser.Math.Vector2(bobble.x, bobble.y);
+    let latestP = bobbleCenter;
+    let latestV = velocity;
+    let count = 0;
 
-    const info = result[0];
-    const path = [info.origin, info.intersection];
-    const diff = new Phaser.Math.Vector2(bobble.body.center.x - info.origin.x, bobble.body.center.y - info.origin.y);
-    return path.map((p) => p.add(diff));
+    while (count < 10) {
+      const result = this.getTrajectoryToward({ x: latestP.x, y: latestP.y, radius: bobble.body.radius }, latestV);
+      if (!result) break;
+
+      const info = result[0];
+      paths.push(info.intersection);
+      if (result[1]) break;
+
+      latestP = new Phaser.Math.Vector2(info.intersection.x, info.intersection.y);
+      latestV = info.normal
+        .clone()
+        .scale(-2 * latestV.dot(info.normal))
+        .add(latestV);
+      count++;
+    }
+
+    if (paths.length === 0) return [];
+    return [bobbleCenter, ...paths];
   }
 
-  getTrajectoryToward(bobble: Bobble, velocity: Phaser.Math.Vector2): [TrajectoryInfo, ceiling: boolean] | undefined {
+  getTrajectoryToward(
+    bobble: { x: number; y: number; radius: number },
+    velocity: Phaser.Math.Vector2,
+  ): [TrajectoryInfo, ceiling: boolean] | undefined {
     const ceilings = this.ceilingGroup.getChildren() as Phaser.GameObjects.Rectangle[];
     const ceilingInfos = ceilings
       .map<[Phaser.GameObjects.Rectangle, TrajectoryInfo, true] | undefined>((wall) => {
@@ -52,22 +72,22 @@ export class TrajectoryComponent {
 
   private getRaycastingResult(
     wall: Phaser.GameObjects.Rectangle,
-    bobble: Bobble,
+    bobble: { x: number; y: number; radius: number },
     velocity: Phaser.Math.Vector2,
   ): TrajectoryInfo | undefined {
     const velocityNormalized = velocity.clone().normalize();
     const velocityPerpendicular = new Phaser.Math.Vector2(-velocityNormalized.y, velocityNormalized.x);
 
     const center = new Phaser.Math.Vector2(bobble.x, bobble.y);
-    const origin1 = center.clone().add(velocityPerpendicular.clone().scale(bobble.body.radius));
-    const origin2 = center.clone().add(velocityPerpendicular.clone().scale(-bobble.body.radius));
+    const origin1 = center.clone().add(velocityPerpendicular.clone().scale(bobble.radius));
+    const origin2 = center.clone().add(velocityPerpendicular.clone().scale(-bobble.radius));
     const results = [origin1, origin2]
       .map((p) => this.getRaycastingResultAt(wall, p, velocity))
       .filter((result) => !!result);
     const closest = results.sort((a, b) => a.distance - b.distance).at(0);
     if (!closest) return;
 
-    const awayV = closest.normal.clone().scale(bobble.body.radius);
+    const awayV = closest.normal.clone().scale(bobble.radius);
     const awayParallelLine = new Phaser.Geom.Line(
       closest.segment.x1 + awayV.x,
       closest.segment.y1 + awayV.y,

@@ -11,10 +11,10 @@ export function stickBallToBall(a: Bobble, b: Bobble): boolean {
 
   if (a.body.moves) {
     const v = new Phaser.Math.Vector2(a.x, a.y).subtract(new Phaser.Math.Vector2(b.x, b.y)).normalize();
-    a.setPosition(b.x + v.x * desiredDistance, b.y + v.y * desiredDistance);
+    a.body.reset(b.x + v.x * desiredDistance, b.y + v.y * desiredDistance);
   } else if (b.body.moves) {
     const v = new Phaser.Math.Vector2(b.x, b.y).subtract(new Phaser.Math.Vector2(a.x, a.y)).normalize();
-    b.setPosition(a.x + v.x * desiredDistance, a.y + v.y * desiredDistance);
+    b.body.reset(a.x + v.x * desiredDistance, a.y + v.y * desiredDistance);
   }
 
   return true;
@@ -36,8 +36,22 @@ export function bounceBallAtWall(ball: Bobble, wall: Phaser.GameObjects.Rectangl
     const info = checkWallCollision(ball, segment);
     if (!info) return false;
 
-    ball.x += info.normal.x * info.penetration;
-    ball.y += info.normal.y * info.penetration;
+    const outD = ball.body.radius;
+    const outV = new Phaser.Math.Vector2(info.normal.x * outD, info.normal.y * outD);
+    const outParallel = new Phaser.Geom.Line(
+      segment[0].x + outV.x,
+      segment[0].y + outV.y,
+      segment[1].x + outV.x,
+      segment[1].y + outV.y,
+    );
+    const path = new Phaser.Geom.Line(
+      ball.x - ball.body.velocity.x,
+      ball.y - ball.body.velocity.y,
+      ball.x + ball.body.velocity.x,
+      ball.y + ball.body.velocity.y,
+    );
+    const contactCenter = Phaser.Geom.Intersects.GetLineToLine(path, outParallel, true);
+    if (!contactCenter) return false;
 
     // Bounce the ball
     const velocityDotNormal = ball.body.velocity.dot(info.normal);
@@ -45,13 +59,16 @@ export function bounceBallAtWall(ball: Bobble, wall: Phaser.GameObjects.Rectangl
       .clone()
       .scale(-2 * velocityDotNormal)
       .add(ball.body.velocity);
+    ball.body.reset(contactCenter.x, contactCenter.y);
     ball.body.velocity.set(reflection.x, reflection.y);
 
     return true;
   });
 }
 
-export function getRectangleSegments(rectangle: Phaser.GameObjects.Rectangle): [Phaser.Math.Vector2, Phaser.Math.Vector2][] {
+export function getRectangleSegments(
+  rectangle: Phaser.GameObjects.Rectangle,
+): [Phaser.Math.Vector2, Phaser.Math.Vector2][] {
   const topLeft = rectangle.getTopLeft();
   const topRight = rectangle.getTopRight();
   const bottomLeft = rectangle.getBottomLeft();

@@ -47,8 +47,7 @@ export class Level_01 {
     this.trajectoryComponent = new TrajectoryComponent(ceilings, walls);
 
     this.turret = new Turret(this.scene, width / 2, height - WALL_THICKNESS);
-    const turretCenter = this.turret.getTurretCenterPosition();
-    this.trajectoryPath = new TrajectoryPath(this.scene, turretCenter.x, turretCenter.y);
+    this.trajectoryPath = new TrajectoryPath(this.scene);
 
     // Create a group for Bobbles
     this.shootingGroup = this.scene.add.group();
