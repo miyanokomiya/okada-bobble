@@ -109,10 +109,10 @@ export class Level_01 {
     if (this.inputComponent.justPressedKeys.down) {
       // this.cleanFloatingBobbles();
     }
-    this.updateTrafectory();
+    this.updateTrajectory();
   }
 
-  private alignBobbles() {
+  private alignBobbles(animate = false) {
     const originX = WALL_THICKNESS + BOBBLE_RADIUS + (this.firstLineType === 0 ? 0 : BOBBLE_RADIUS);
     const originY = WALL_THICKNESS + BOBBLE_RADIUS;
     const unitX = BOBBLE_RADIUS * 2;
@@ -125,7 +125,20 @@ export class Level_01 {
 
       const adjustedOriginX = noPadding ? originX : originX + unitX / 2;
       const xIndex = Math.round((bobble.x - adjustedOriginX) / unitX);
-      bobble.setPosition(xIndex * unitX + adjustedOriginX, yIndex * unitY + originY);
+      const x = xIndex * unitX + adjustedOriginX;
+      const y = yIndex * unitY + originY;
+      if (bobble.x === x && bobble.y === y) return;
+
+      if (animate) {
+        this.scene.tweens.add({
+          targets: bobble,
+          x,
+          y,
+          duration: 25,
+        });
+      } else {
+        bobble.setPosition(x, y);
+      }
     });
   }
 
@@ -136,7 +149,7 @@ export class Level_01 {
   private finishShooting(bobble: Bobble) {
     this.shootingGroup.remove(bobble);
     this.bobbleGroup.add(bobble);
-    this.alignBobbles();
+    this.alignBobbles(true);
 
     this.ruleComponent.setBobbles(this.bobbleGroup.getChildren().filter((b) => b instanceof Bobble) as Bobble[]);
     const result = this.ruleComponent.landBobble(bobble);
@@ -172,7 +185,7 @@ export class Level_01 {
     this.reloadBobble();
   }
 
-  private updateTrafectory() {
+  private updateTrajectory() {
     if (!this.loadedBobble || this.isLoading) {
       this.trajectoryPath.clearPath();
       return;

@@ -7,7 +7,7 @@ export function stickBallToBall(a: Bobble, b: Bobble): boolean {
   const distanceSq = Phaser.Math.Distance.BetweenPointsSquared(a, b);
   const desiredDistance = a.body.radius + b.body.radius;
   const thresholdSq = desiredDistance ** 2;
-  if (distanceSq >= thresholdSq) return false;
+  if (distanceSq > thresholdSq) return false;
 
   if (a.body.moves) {
     const v = new Phaser.Math.Vector2(a.x, a.y).subtract(new Phaser.Math.Vector2(b.x, b.y)).normalize();
