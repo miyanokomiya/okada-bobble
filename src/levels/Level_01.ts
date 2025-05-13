@@ -1,8 +1,10 @@
 import { InputComponent } from "../components/InputComponent";
 import { RuleComponent } from "../components/rules/RuleComponent";
+import { TrajectoryComponent } from "../components/TrajectoryComponent";
 import { BobbleMagazine } from "../pawns/BobbleMagazine";
 import { Bobble, BOBBLE_RADIUS } from "../pawns/bobbles/Bobble";
 import { createBobble } from "../pawns/bobbles/bobbleFactory";
+import { TrajectoryPath } from "../pawns/TrajectoryPath";
 import { Turret } from "../pawns/Turret";
 import { bounceBallAtWall, stickBallToBall, stickBallToWall } from "../utils/physics";
 import { BOBBLE_SPEED } from "../utils/settings";
@@ -17,7 +19,10 @@ export class Level_01 {
   private bobbleMagazine!: BobbleMagazine;
   private loadedBobble: Bobble | undefined;
   private ruleComponent: RuleComponent = new RuleComponent();
+  private trajectoryComponent!: TrajectoryComponent;
   private firstLineType: 0 | 1 = 0;
+  private trajectoryPath!: TrajectoryPath;
+  private isLoading: boolean = false;
 
   constructor(public scene: Phaser.Scene) {}
 
@@ -27,8 +32,9 @@ export class Level_01 {
     // Add static walls along the viewport outline
     const { width, height } = this.scene.scale;
 
-    const ceiling = this.scene.add.rectangle(width / 2, WALL_THICKNESS / 2, width, WALL_THICKNESS, 0x000000);
-    this.scene.physics.add.existing(ceiling, true);
+    const ceilings = this.scene.physics.add.staticGroup([
+      this.scene.add.rectangle(width / 2, WALL_THICKNESS / 2, width, WALL_THICKNESS, 0x000000),
+    ]);
 
     const floor = this.scene.add.rectangle(width / 2, height - WALL_THICKNESS / 2, width, WALL_THICKNESS, 0x000000);
     this.scene.physics.add.existing(floor, true);
@@ -38,7 +44,11 @@ export class Level_01 {
       this.scene.add.rectangle(width - WALL_THICKNESS / 2, height / 2, WALL_THICKNESS, height, 0x000000),
     ]);
 
+    this.trajectoryComponent = new TrajectoryComponent(ceilings, walls);
+
     this.turret = new Turret(this.scene, width / 2, height - WALL_THICKNESS);
+    const turretCenter = this.turret.getTurretCenterPosition();
+    this.trajectoryPath = new TrajectoryPath(this.scene, turretCenter.x, turretCenter.y);
 
     // Create a group for Bobbles
     this.shootingGroup = this.scene.add.group();
@@ -59,7 +69,7 @@ export class Level_01 {
     this.scene.physics.add.collider(this.bobbleGroup, floor);
     this.scene.physics.add.collider(this.shootingGroup, floor);
     this.scene.physics.add.overlap(this.shootingGroup, walls, onOverlapBobbleAndWall);
-    this.scene.physics.add.overlap(this.shootingGroup, ceiling, (bobble, celing) => {
+    this.scene.physics.add.overlap(this.shootingGroup, ceilings, (bobble, celing) => {
       if (!(bobble instanceof Bobble)) return;
 
       onOverlapBobbleAndCeiling(bobble, celing);
@@ -98,8 +108,9 @@ export class Level_01 {
       this.shootBobble();
     }
     if (this.inputComponent.justPressedKeys.down) {
-      this.cleanFloatingBobbles();
+      // this.cleanFloatingBobbles();
     }
+    this.updateTrafectory();
   }
 
   private alignBobbles() {
@@ -162,6 +173,18 @@ export class Level_01 {
     this.reloadBobble();
   }
 
+  private updateTrafectory() {
+    if (!this.loadedBobble || this.isLoading) {
+      this.trajectoryPath.clearPath();
+      return;
+    }
+
+    const angle = this.turret.getTurretAngle();
+    const v = new Phaser.Math.Vector2(Math.cos(Phaser.Math.DegToRad(angle)), Math.sin(Phaser.Math.DegToRad(angle)));
+    const paths = this.trajectoryComponent.getTrajectoryPaths(this.loadedBobble, v);
+    this.trajectoryPath.drawPath(paths);
+  }
+
   private reloadBobble() {
     if (!this.bobbleMagazine.isReloaded()) return;
     if (this.loadedBobble) return;
@@ -169,6 +192,7 @@ export class Level_01 {
     this.loadedBobble = this.bobbleMagazine.popBobble();
     if (!this.loadedBobble) return;
 
+    this.isLoading = true;
     const center = this.turret.getTurretCenterPosition();
     this.scene.tweens.add({
       targets: this.loadedBobble,
@@ -176,7 +200,9 @@ export class Level_01 {
       y: center.y,
       duration: 200,
       ease: "linear",
-      onComplete: () => {},
+      onComplete: () => {
+        this.isLoading = false;
+      },
     });
 
     this.bobbleMagazine.reload();

@@ -51,7 +51,7 @@ export function bounceBallAtWall(ball: Bobble, wall: Phaser.GameObjects.Rectangl
   });
 }
 
-function getRectangleSegments(rectangle: Phaser.GameObjects.Rectangle): [Phaser.Math.Vector2, Phaser.Math.Vector2][] {
+export function getRectangleSegments(rectangle: Phaser.GameObjects.Rectangle): [Phaser.Math.Vector2, Phaser.Math.Vector2][] {
   const topLeft = rectangle.getTopLeft();
   const topRight = rectangle.getTopRight();
   const bottomLeft = rectangle.getBottomLeft();
