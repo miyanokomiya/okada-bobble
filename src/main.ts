@@ -1,3 +1,4 @@
+import Phaser from "phaser";
 import { MainScene } from "./scenes/MainScene";
 import "./style.css";
 

@@ -1,3 +1,5 @@
+export const DEFAULT_FONT = "Arial";
+
 export type BOBBLE_LABEL = "oka" | "da";
 export type BOBBLE_COLOR = 0 | 1 | 2 | 3 | 4;
 

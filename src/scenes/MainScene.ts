@@ -1,6 +1,3 @@
-import Phaser from "phaser";
-import { Level_01 } from "../levels/Level_01";
-
 import sprite_balls from "../assets/images/character_balls.png";
 
 import turret_top from "../assets/images/turret_top.png";
@@ -9,12 +6,16 @@ import turret_base from "../assets/images/turret_base.png";
 import fall_1 from "../assets/sounds/fall_1.mp3";
 import coin_1 from "../assets/sounds/coin_1.mp3";
 import coin_2 from "../assets/sounds/coin_2.mp3";
-import { getLevel, getNextLevel, LEVEL_GRADE, LevelGrade } from "../levels";
+
+import Phaser from "phaser";
+import { Level_01 } from "../levels/Level_01";
+import { getLevel, LEVEL_GRADE, LevelGrade } from "../levels";
+import { LevelHUD } from "../widgets/LevelHUD";
 
 export class MainScene extends Phaser.Scene {
   private level!: Level_01;
-  private levelIndex = 1;
-  private levelGrade: LevelGrade = "INTRODUCTION";
+  private levelIndex = 0;
+  private levelGrade: LevelGrade = LEVEL_GRADE.INTRODUCTION;
 
   constructor() {
     super({ key: "MAIN" });
@@ -48,6 +49,8 @@ export class MainScene extends Phaser.Scene {
     this.level.on("level-clear", () => {
       this.scene.start("MAIN", { grade: this.levelGrade, index: this.levelIndex + 1 });
     });
+
+    new LevelHUD(this, { levelIndex: this.levelIndex });
   }
 
   update(time: number, delta: number): void {
