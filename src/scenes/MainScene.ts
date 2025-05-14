@@ -9,26 +9,20 @@ import coin_2 from "../assets/sounds/coin_2.mp3";
 
 import Phaser from "phaser";
 import { Level_01 } from "../levels/Level_01";
-import { getLevel, LEVEL_GRADE, LevelGrade } from "../levels";
+import { getLevel, LEVEL_GRADE, LevelSceneConfig } from "../levels";
 import { LevelHUD } from "../widgets/LevelHUD";
 
 export class MainScene extends Phaser.Scene {
   private level!: Level_01;
-  private levelIndex = 0;
-  private levelGrade: LevelGrade = LEVEL_GRADE.INTRODUCTION;
+  private config: LevelSceneConfig = { grade: LEVEL_GRADE.INTRODUCTION, index: 0 };
 
   constructor() {
     super({ key: "MAIN" });
   }
 
-  init(config?: { grade: LevelGrade; index: number }) {
-    if (!config) return;
-
-    const level = getLevel(config.grade, config.index);
-    if (!level) return;
-
-    this.levelGrade = config.grade;
-    this.levelIndex = config.index;
+  init(config: Partial<LevelSceneConfig>) {
+    this.config.grade = config.grade ?? this.config.grade;
+    this.config.index = config.index ?? this.config.index;
   }
 
   preload() {
@@ -43,22 +37,22 @@ export class MainScene extends Phaser.Scene {
   }
 
   create() {
-    const LevelClass = getLevel(this.levelGrade, this.levelIndex)?.LevelClass;
+    const LevelClass = getLevel(this.config.grade, this.config.index)?.LevelClass;
     this.level = new LevelClass(this);
     this.level.create();
     this.level.on("level-clear", () => {
-      const nextLevel = getLevel(this.levelGrade, this.levelIndex + 1);
+      const nextLevel = getLevel(this.config.grade, this.config.index + 1);
       if (nextLevel) {
-        this.scene.start("MAIN", { grade: this.levelGrade, index: this.levelIndex + 1 });
+        this.scene.start("MAIN", { grade: this.config.grade, index: this.config.index + 1 });
       } else {
-        this.scene.start("LEVEL_SELECT");
+        this.scene.start("LEVEL_SELECT", { grade: this.config.grade, index: this.config.index });
       }
     });
     this.level.on("level-escape", () => {
-      this.scene.start("LEVEL_SELECT");
+      this.scene.start("LEVEL_SELECT", { grade: this.config.grade, index: this.config.index });
     });
 
-    new LevelHUD(this, { levelIndex: this.levelIndex });
+    new LevelHUD(this, { levelIndex: this.config.index });
   }
 
   update(time: number, delta: number): void {

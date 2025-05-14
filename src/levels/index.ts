@@ -6,6 +6,8 @@ export const LEVEL_GRADE = {
 } as const;
 export type LevelGrade = keyof typeof LEVEL_GRADE;
 
+export type LevelSceneConfig = { grade: LevelGrade; index: number };
+
 export type Level = {
   grade: (typeof LEVEL_GRADE)[LevelGrade];
   LevelClass: any;

@@ -1,9 +1,10 @@
+import { SelectableObject } from "../components/SelectableGridComponent";
 import { DEFAULT_FONT } from "../utils/settings";
 
 const WIDTH = 40;
 const HEIGHT = 40;
 
-export class LevelSelectButton extends Phaser.GameObjects.Container {
+export class LevelSelectButton extends Phaser.GameObjects.Container implements SelectableObject {
   levelGrade: string;
   levelIndex: number;
   private background: Phaser.GameObjects.Graphics;
