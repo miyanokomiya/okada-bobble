@@ -7,9 +7,9 @@ import { createBobble } from "../pawns/bobbles/bobbleFactory";
 import { TrajectoryPath } from "../pawns/TrajectoryPath";
 import { Turret } from "../pawns/Turret";
 import { bounceBallAtWall, stickBallToBall, stickBallToWall } from "../utils/physics";
-import { BOBBLE_COLOR, BOBBLE_LABEL, BOBBLE_SPEED, BobbleSrc } from "../utils/settings";
+import { BOBBLE_SPEED, BobbleSrc } from "../utils/settings";
 
-export class Level_01 {
+export class Level_01 extends Phaser.Events.EventEmitter {
   private turret!: Turret;
   private inputComponent!: InputComponent;
   private shootingGroup!: Phaser.GameObjects.Group;
@@ -33,6 +33,8 @@ export class Level_01 {
   protected lineCount = 16; // should be equal or less than 16
 
   constructor(public scene: Phaser.Scene) {
+    super();
+
     this.soundBobbleShoot = scene.sound.add("bobble_shoot", { volume: 0.5 });
     this.soundBobbleLand = scene.sound.add("bobble_land", { volume: 0.5 });
     this.soundBobbleComplete = scene.sound.add("bobble_complete", { volume: 0.5 });
@@ -131,6 +133,7 @@ export class Level_01 {
     }
     if (this.inputComponent.justPressedKeys.down) {
       // this.cleanFloatingBobbles();
+      this.emit("level-clear");
     }
     this.updateTrajectory();
   }
