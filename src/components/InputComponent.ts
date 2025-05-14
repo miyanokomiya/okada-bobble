@@ -4,6 +4,7 @@ export class InputComponent {
   private keyS?: Phaser.Input.Keyboard.Key;
   private keyA?: Phaser.Input.Keyboard.Key;
   private keyD?: Phaser.Input.Keyboard.Key;
+  private keyESC?: Phaser.Input.Keyboard.Key;
 
   public pressedKeys: {
     [key: string]: boolean;
@@ -19,6 +20,7 @@ export class InputComponent {
     this.keyS = scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.S);
     this.keyD = scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.D);
     this.keyW = scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+    this.keyESC = scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
   }
 
   update() {
@@ -27,6 +29,7 @@ export class InputComponent {
     this.updateKye("right", this.cursorKeys?.right.isDown || this.keyD?.isDown);
     this.updateKye("down", this.cursorKeys?.down.isDown || this.keyS?.isDown);
     this.updateKye("space", this.cursorKeys?.space.isDown);
+    this.updateKye("esc", this.keyESC?.isDown);
   }
 
   private updateKye(key: string, isDown = false) {

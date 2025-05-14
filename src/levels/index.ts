@@ -2,6 +2,7 @@ import { Level_01 } from "./Level_01";
 
 export const LEVEL_GRADE = {
   INTRODUCTION: "INTRODUCTION",
+  CHALLENGE: "CHALLENGE",
 } as const;
 export type LevelGrade = keyof typeof LEVEL_GRADE;
 
@@ -10,19 +11,28 @@ export type Level = {
   LevelClass: any;
 };
 
-const LEVEL_INDEX: Level[] = [
+export type LevelInfo = {
+  grade: LevelGrade;
+  index: number;
+};
+
+export const LEVEL_LIST: Level[] = [
   { grade: LEVEL_GRADE.INTRODUCTION, LevelClass: Level_01 },
   { grade: LEVEL_GRADE.INTRODUCTION, LevelClass: Level_01 },
   { grade: LEVEL_GRADE.INTRODUCTION, LevelClass: Level_01 },
+
+  { grade: LEVEL_GRADE.CHALLENGE, LevelClass: Level_01 },
+  { grade: LEVEL_GRADE.CHALLENGE, LevelClass: Level_01 },
+  { grade: LEVEL_GRADE.CHALLENGE, LevelClass: Level_01 },
 ];
 
 export function getNextLevel(current: Level): Level | undefined {
-  const levels = LEVEL_INDEX.filter((level) => level.grade === current.grade);
+  const levels = LEVEL_LIST.filter((level) => level.grade === current.grade);
   const currentIndex = levels.findIndex((level) => level === current);
   return levels.at(currentIndex + 1);
 }
 
 export function getLevel(grade: LevelGrade, index = 0): Level | undefined {
-  const levels = LEVEL_INDEX.filter((level) => level.grade === grade);
+  const levels = LEVEL_LIST.filter((level) => level.grade === grade);
   return levels.at(index);
 }

@@ -132,8 +132,10 @@ export class Level_01 extends Phaser.Events.EventEmitter {
       this.shootBobble();
     }
     if (this.inputComponent.justPressedKeys.down) {
-      // this.cleanFloatingBobbles();
       this.emit("level-clear");
+    }
+    if (this.inputComponent.justPressedKeys.esc) {
+      this.emit("level-escape");
     }
     this.updateTrajectory();
   }

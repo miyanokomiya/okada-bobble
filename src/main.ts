@@ -1,6 +1,7 @@
 import Phaser from "phaser";
-import { MainScene } from "./scenes/MainScene";
 import "./style.css";
+import { LevelSelectScene } from "./scenes/LevelSelectScene";
+import { MainScene } from "./scenes/MainScene";
 
 new Phaser.Game({
   parent: document.getElementById("app") as HTMLElement,
@@ -8,7 +9,7 @@ new Phaser.Game({
   width: 800,
   height: 600,
   backgroundColor: "#1099bb",
-  scene: MainScene,
+  scene: [LevelSelectScene, MainScene],
   physics: {
     default: "arcade",
     arcade: {
