@@ -2,6 +2,10 @@ import sprite_balls from "../assets/images/character_balls.png";
 
 import turret_top from "../assets/images/turret_top.png";
 import turret_base from "../assets/images/turret_base.png";
+import gear1 from "../assets/images/gear1.svg";
+import gear2 from "../assets/images/gear2.svg";
+import gear3 from "../assets/images/gear3.svg";
+import gear4 from "../assets/images/gear4.svg";
 
 import fall_1 from "../assets/sounds/fall_1.mp3";
 import coin_1 from "../assets/sounds/coin_1.mp3";
@@ -30,6 +34,10 @@ export class MainScene extends Phaser.Scene {
 
     this.load.image("turret_top", turret_top);
     this.load.image("turret_base", turret_base);
+    this.load.image("gear1", gear1);
+    this.load.image("gear2", gear2);
+    this.load.image("gear3", gear3);
+    this.load.image("gear4", gear4);
 
     this.load.audio("bobble_shoot", fall_1, { volume: 0.1 });
     this.load.audio("bobble_land", coin_1);

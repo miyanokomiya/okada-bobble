@@ -1,6 +1,7 @@
 import { InputComponent } from "../components/InputComponent";
 import { RuleComponent } from "../components/rules/RuleComponent";
 import { TrajectoryComponent } from "../components/TrajectoryComponent";
+import { Background } from "../pawns/Background";
 import { BobbleMagazine } from "../pawns/BobbleMagazine";
 import { Bobble, BOBBLE_RADIUS } from "../pawns/bobbles/Bobble";
 import { createBobble } from "../pawns/bobbles/bobbleFactory";
@@ -45,6 +46,8 @@ export class Level_01 extends Phaser.Events.EventEmitter {
   }
 
   create() {
+    new Background(this.scene);
+
     // Add static walls along the viewport outline
     const { width, height } = this.scene.scale;
     this.wallThickness = (width - this.countInLine * BOBBLE_RADIUS * 2) / 2;
