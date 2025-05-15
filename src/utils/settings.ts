@@ -1,9 +1,21 @@
 export const DEFAULT_FONT = "Arial";
 
-export type BOBBLE_LABEL = "oka" | "da";
-export type BOBBLE_COLOR = 0 | 1 | 2 | 3 | 4;
+export const BOBBLE_LABEL = {
+  OKA: "oka",
+  DA: "da",
+} as const;
+export type BobbleLabel = (typeof BOBBLE_LABEL)[keyof typeof BOBBLE_LABEL];
 
-export function getBobbleTexture(label: BOBBLE_LABEL): { texture: string; frame: number } {
+export const BOBBLE_COLOR = {
+  WHITE: 0,
+  A: 1,
+  B: 2,
+  C: 3,
+  D: 4,
+};
+export type BobbleColor = (typeof BOBBLE_COLOR)[keyof typeof BOBBLE_COLOR];
+
+export function getBobbleTexture(label: BobbleLabel): { texture: string; frame: number } {
   switch (label) {
     case "oka":
       return { texture: "bobbles", frame: 0 };
@@ -14,7 +26,7 @@ export function getBobbleTexture(label: BOBBLE_LABEL): { texture: string; frame:
   }
 }
 
-export function getBobbleThemaColor(color: BOBBLE_COLOR): number {
+export function getBobbleThemaColor(color: BobbleColor): number {
   switch (color) {
     case 1:
       return 0x00ff00;
@@ -31,4 +43,4 @@ export function getBobbleThemaColor(color: BOBBLE_COLOR): number {
 
 export const BOBBLE_SPEED = 800;
 
-export type BobbleSrc = { x: number; y: number; label: BOBBLE_LABEL; color: BOBBLE_COLOR };
+export type BobbleSrc = { x: number; y: number; label: BobbleLabel; color: BobbleColor };

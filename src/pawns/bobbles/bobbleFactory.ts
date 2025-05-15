@@ -1,9 +1,9 @@
-import { BOBBLE_COLOR, BOBBLE_LABEL } from "../../utils/settings";
+import { BobbleColor, BobbleLabel } from "../../utils/settings";
 import { Bobble } from "./Bobble";
 
 export type BobbleSettings = {
-  label: BOBBLE_LABEL;
-  color: BOBBLE_COLOR;
+  label: BobbleLabel;
+  color: BobbleColor;
 };
 
 export function createBobble(scene: Phaser.Scene, x: number, y: number, settings: BobbleSettings): Bobble {

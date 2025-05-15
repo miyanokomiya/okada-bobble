@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { BOBBLE_COLOR, BOBBLE_LABEL, getBobbleTexture, getBobbleThemaColor } from "../../utils/settings";
+import { BobbleColor, BobbleLabel, getBobbleTexture, getBobbleThemaColor } from "../../utils/settings";
 
 export const BOBBLE_RADIUS = 16;
 
@@ -10,8 +10,8 @@ export class Bobble extends Phaser.GameObjects.Container {
     scene: Phaser.Scene,
     x: number,
     y: number,
-    public label: BOBBLE_LABEL,
-    public color: BOBBLE_COLOR,
+    public label: BobbleLabel,
+    public color: BobbleColor,
   ) {
     const background = scene.add.circle(0, 0, BOBBLE_RADIUS, getBobbleThemaColor(color));
     const textureInfo = getBobbleTexture(label);

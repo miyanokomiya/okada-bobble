@@ -16,7 +16,7 @@ export class BobbleMagazine extends Phaser.GameObjects.Container {
     super(scene, x, y, [background]);
     scene.add.existing(this);
 
-    this.rng = new Phaser.Math.RandomDataGenerator(seed);
+    this.rng = new Phaser.Math.RandomDataGenerator(seed ? [seed] : undefined);
   }
 
   private createBobble(x: number) {

@@ -1,3 +1,4 @@
+import { IntroLevel_01 } from "./introductions/IntroLevel_01";
 import { Level_01 } from "./Level_01";
 
 export const LEVEL_GRADE = {
@@ -19,9 +20,9 @@ export type LevelInfo = {
 };
 
 export const LEVEL_LIST: Level[] = [
-  { grade: LEVEL_GRADE.INTRODUCTION, LevelClass: Level_01 },
-  { grade: LEVEL_GRADE.INTRODUCTION, LevelClass: Level_01 },
-  { grade: LEVEL_GRADE.INTRODUCTION, LevelClass: Level_01 },
+  { grade: LEVEL_GRADE.INTRODUCTION, LevelClass: IntroLevel_01 },
+  { grade: LEVEL_GRADE.INTRODUCTION, LevelClass: IntroLevel_01 },
+  { grade: LEVEL_GRADE.INTRODUCTION, LevelClass: IntroLevel_01 },
 
   { grade: LEVEL_GRADE.CHALLENGE, LevelClass: Level_01 },
   { grade: LEVEL_GRADE.CHALLENGE, LevelClass: Level_01 },

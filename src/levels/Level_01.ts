@@ -7,7 +7,7 @@ import { createBobble } from "../pawns/bobbles/bobbleFactory";
 import { TrajectoryPath } from "../pawns/TrajectoryPath";
 import { Turret } from "../pawns/Turret";
 import { bounceBallAtWall, stickBallToBall, stickBallToWall } from "../utils/physics";
-import { BOBBLE_SPEED, BobbleSrc } from "../utils/settings";
+import { BOBBLE_COLOR, BOBBLE_LABEL, BOBBLE_SPEED, BobbleSrc } from "../utils/settings";
 
 export class Level_01 extends Phaser.Events.EventEmitter {
   private turret!: Turret;
@@ -26,18 +26,20 @@ export class Level_01 extends Phaser.Events.EventEmitter {
   private soundBobbleLand: Phaser.Sound.BaseSound;
   private soundBobbleComplete: Phaser.Sound.BaseSound;
 
-  protected wallThickness = 32;
-  protected ceilingThickness = 32;
-  protected floorThickness = 32;
+  private floorThickness = 32; // Fixed value
+  private wallThickness = 32; // calculated automatically
+  private ceilingThickness = 32; // calculated automatically
+
+  protected bobbleSeed = "123456";
   protected countInLine = 12; // should be equal or less than 20
   protected lineCount = 16; // should be equal or less than 16
 
   constructor(public scene: Phaser.Scene) {
     super();
 
-    this.soundBobbleShoot = scene.sound.add("bobble_shoot", { volume: 0.5 });
-    this.soundBobbleLand = scene.sound.add("bobble_land", { volume: 0.5 });
-    this.soundBobbleComplete = scene.sound.add("bobble_complete", { volume: 0.5 });
+    this.soundBobbleShoot = scene.sound.add("bobble_shoot", { volume: 0.2 });
+    this.soundBobbleLand = scene.sound.add("bobble_land", { volume: 0.2 });
+    this.soundBobbleComplete = scene.sound.add("bobble_complete", { volume: 0.1 });
 
     this.inputComponent = new InputComponent(this.scene);
   }
@@ -77,7 +79,12 @@ export class Level_01 extends Phaser.Events.EventEmitter {
     // Create a group for Bobbles
     this.shootingGroup = this.scene.add.group();
     this.bobbleGroup = this.scene.add.group();
-    this.bobbleMagazine = new BobbleMagazine(this.scene, width / 2 - 160, height - this.floorThickness - 22, "123456");
+    this.bobbleMagazine = new BobbleMagazine(
+      this.scene,
+      width / 2 - 160,
+      height - this.floorThickness - 22,
+      this.bobbleSeed,
+    );
 
     const bobbles = this.getBobbleSrc().map((src) => {
       const { x, y } = this.getBobblePositionFromCoordinates(src.x, src.y);
@@ -142,14 +149,18 @@ export class Level_01 extends Phaser.Events.EventEmitter {
 
   protected getBobbleSrc(): BobbleSrc[] {
     return [
-      { x: 6, y: 0, label: "oka", color: 1 },
-      { x: 7, y: 0, label: "da", color: 2 },
-      { x: 6, y: 1, label: "oka", color: 1 },
-      { x: 5, y: 1, label: "da", color: 2 },
+      { x: 6, y: 0, label: BOBBLE_LABEL.OKA, color: BOBBLE_COLOR.A },
+      { x: 7, y: 0, label: BOBBLE_LABEL.DA, color: BOBBLE_COLOR.B },
+      { x: 6, y: 1, label: BOBBLE_LABEL.OKA, color: BOBBLE_COLOR.C },
+      { x: 5, y: 1, label: BOBBLE_LABEL.DA, color: BOBBLE_COLOR.D },
     ];
   }
 
-  private getBobblePositionFromCoordinates(xIndex: number, yIndex: number) {
+  protected isStickingCoordinates(p: { x: number; y: number }): boolean {
+    return p.y === 0;
+  }
+
+  protected getBobblePositionFromCoordinates(xIndex: number, yIndex: number) {
     const originX = this.wallThickness + BOBBLE_RADIUS + (this.firstLineType === 0 ? 0 : BOBBLE_RADIUS);
     const originY = this.ceilingThickness + BOBBLE_RADIUS;
     const unitX = BOBBLE_RADIUS * 2;
@@ -159,6 +170,18 @@ export class Level_01 extends Phaser.Events.EventEmitter {
     const x = xIndex * unitX + adjustedOriginX;
     const y = yIndex * unitY + originY;
     return { x, y };
+  }
+
+  protected getBobbleCoordinatesFromPosition(x: number, y: number) {
+    const originX = this.wallThickness + BOBBLE_RADIUS + (this.firstLineType === 0 ? 0 : BOBBLE_RADIUS);
+    const originY = this.ceilingThickness + BOBBLE_RADIUS;
+    const unitX = BOBBLE_RADIUS * 2;
+    const unitY = Math.sqrt(3) * BOBBLE_RADIUS;
+    const yIndex = Math.round((y - originY) / unitY);
+    const noPadding = yIndex % 2 === this.firstLineType;
+    const adjustedOriginX = noPadding ? originX : originX + unitX / 2;
+    const xIndex = Math.round((x - adjustedOriginX) / unitX);
+    return { x: xIndex, y: yIndex };
   }
 
   private alignBobbles(animate = false) {
@@ -273,15 +296,8 @@ export class Level_01 extends Phaser.Events.EventEmitter {
     this.bobbleMagazine.reload();
   }
 
-  private isTouchingWall(bobble: Bobble): boolean {
-    const { x, y } = bobble;
-    const radius = bobble.body.radius;
-    return (
-      y - radius <= this.wallThickness ||
-      y + radius >= this.scene.scale.height - this.wallThickness ||
-      x - radius <= this.wallThickness ||
-      x + radius >= this.scene.scale.width - this.wallThickness
-    );
+  private isSticking(bobble: Bobble): boolean {
+    return this.isStickingCoordinates(this.getBobbleCoordinatesFromPosition(bobble.x, bobble.y));
   }
 
   private resetBobbleMoves() {
@@ -289,7 +305,7 @@ export class Level_01 extends Phaser.Events.EventEmitter {
     const clusters = this.ruleComponent.getBobbleClusters();
     clusters.forEach((cluster) => {
       cluster.forEach((bobble) => {
-        if (this.isTouchingWall(bobble)) {
+        if (this.isSticking(bobble)) {
           bobble.setMoves(false);
         } else {
           bobble.setMoves(true);
