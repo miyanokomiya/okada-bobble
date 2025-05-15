@@ -11,25 +11,25 @@ import { bounceBallAtWall, stickBallToBall, stickBallToWall } from "../utils/phy
 import { BOBBLE_COLOR, BOBBLE_LABEL, BOBBLE_SPEED, BobbleSrc } from "../utils/settings";
 
 export class Level_01 extends Phaser.Events.EventEmitter {
-  private turret!: Turret;
-  private inputComponent!: InputComponent;
-  private shootingGroup!: Phaser.GameObjects.Group;
-  private bobbleGroup!: Phaser.GameObjects.Group;
-  private bobbleMagazine!: BobbleMagazine;
-  private loadedBobble: Bobble | undefined;
-  private ruleComponent: RuleComponent = new RuleComponent();
-  private trajectoryComponent!: TrajectoryComponent;
-  private firstLineType: 0 | 1 = 0;
-  private trajectoryPath!: TrajectoryPath;
-  private isLoading: boolean = false;
+  protected turret!: Turret;
+  protected inputComponent!: InputComponent;
+  protected shootingGroup!: Phaser.GameObjects.Group;
+  protected bobbleGroup!: Phaser.GameObjects.Group;
+  protected bobbleMagazine!: BobbleMagazine;
+  protected loadedBobble: Bobble | undefined;
+  protected ruleComponent: RuleComponent = new RuleComponent();
+  protected trajectoryComponent!: TrajectoryComponent;
+  protected firstLineType: 0 | 1 = 0;
+  protected trajectoryPath!: TrajectoryPath;
+  protected isLoading: boolean = false;
 
-  private soundBobbleShoot: Phaser.Sound.BaseSound;
-  private soundBobbleLand: Phaser.Sound.BaseSound;
-  private soundBobbleComplete: Phaser.Sound.BaseSound;
+  protected soundBobbleShoot: Phaser.Sound.BaseSound;
+  protected soundBobbleLand: Phaser.Sound.BaseSound;
+  protected soundBobbleComplete: Phaser.Sound.BaseSound;
 
-  private floorThickness = 32; // Fixed value
-  private wallThickness = 32; // calculated automatically
-  private ceilingThickness = 32; // calculated automatically
+  protected floorThickness = 32; // Fixed value
+  protected wallThickness = 32; // calculated automatically
+  protected ceilingThickness = 32; // calculated automatically
 
   protected bobbleSeed = "123456";
   protected countInLine = 12; // should be equal or less than 20
@@ -82,12 +82,7 @@ export class Level_01 extends Phaser.Events.EventEmitter {
     // Create a group for Bobbles
     this.shootingGroup = this.scene.add.group();
     this.bobbleGroup = this.scene.add.group();
-    this.bobbleMagazine = new BobbleMagazine(
-      this.scene,
-      width / 2 - 160,
-      height - this.floorThickness - 22,
-      this.bobbleSeed,
-    );
+    this.initBobbleMagazine();
 
     const bobbles = this.getBobbleSrc().map((src) => {
       const { x, y } = this.getBobblePositionFromCoordinates(src.x, src.y);
@@ -148,6 +143,15 @@ export class Level_01 extends Phaser.Events.EventEmitter {
       this.emit("level-escape");
     }
     this.updateTrajectory();
+  }
+
+  protected initBobbleMagazine() {
+    this.bobbleMagazine = new BobbleMagazine(
+      this.scene,
+      this.scene.scale.width / 2 - 160,
+      this.scene.scale.height - this.floorThickness - 22,
+      this.bobbleSeed,
+    );
   }
 
   protected getBobbleSrc(): BobbleSrc[] {

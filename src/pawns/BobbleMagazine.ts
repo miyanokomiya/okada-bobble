@@ -1,3 +1,4 @@
+import { BobbleColor, BobbleLabel } from "../utils/settings";
 import { Bobble, BOBBLE_RADIUS } from "./bobbles/Bobble";
 import { createBobble } from "./bobbles/bobbleFactory";
 
@@ -5,13 +6,22 @@ const MAX_COUNT = 5;
 const PADDING = 5;
 const width = BOBBLE_RADIUS * 2 * MAX_COUNT + PADDING * (MAX_COUNT + 1);
 
+type BobblePresetSrc = { label: BobbleLabel; color: BobbleColor };
+
 export class BobbleMagazine extends Phaser.GameObjects.Container {
-  private bobbles: Bobble[] = [];
+  private bobbles: (Bobble | null)[] = [];
   private reloading = false;
   private eventEmitter: Phaser.Events.EventEmitter = new Phaser.Events.EventEmitter();
   private rng: Phaser.Math.RandomDataGenerator;
+  private preset?: BobblePresetSrc[];
 
-  constructor(scene: Phaser.Scene, x: number, y: number, seed?: string) {
+  constructor(
+    scene: Phaser.Scene,
+    x: number,
+    y: number,
+    seed?: string,
+    private presetOnly = false,
+  ) {
     const background = scene.add.rectangle(0, 0, width, BOBBLE_RADIUS * 2 + PADDING * 2, 0xaaaaaa);
     super(scene, x, y, [background]);
     scene.add.existing(this);
@@ -19,7 +29,21 @@ export class BobbleMagazine extends Phaser.GameObjects.Container {
     this.rng = new Phaser.Math.RandomDataGenerator(seed ? [seed] : undefined);
   }
 
-  private createBobble(x: number) {
+  setPreset(bobbleSrcList: BobblePresetSrc[]) {
+    this.preset = bobbleSrcList.concat();
+  }
+
+  private createBobble(x: number): Bobble | null {
+    const bobbleSrc = this.preset?.shift();
+    if (bobbleSrc) {
+      return createBobble(this.scene, x, 0, {
+        label: bobbleSrc.label,
+        color: bobbleSrc.color,
+      });
+    } else if (this.presetOnly) {
+      return null;
+    }
+
     const labelSeed = this.rng.between(0, 1);
     const colorSeed = this.rng.between(1, 4);
     return createBobble(this.scene, x, 0, {
@@ -36,17 +60,21 @@ export class BobbleMagazine extends Phaser.GameObjects.Container {
     for (let i = currentCount; i < MAX_COUNT; i++) {
       const bobble = this.createBobble(x);
       this.bobbles.push(bobble);
-      this.add(bobble);
+      if (bobble) {
+        this.add(bobble);
+      }
     }
 
     for (let i = 0; i < this.bobbles.length; i++) {
       const bobble = this.bobbles[this.bobbles.length - 1 - i];
-      this.scene.tweens.add({
-        targets: bobble,
-        x,
-        duration: 500,
-        ease: "linear",
-      });
+      if (bobble) {
+        this.scene.tweens.add({
+          targets: bobble,
+          x,
+          duration: 500,
+          ease: "linear",
+        });
+      }
       x += BOBBLE_RADIUS * 2 + PADDING;
     }
   }
@@ -58,40 +86,53 @@ export class BobbleMagazine extends Phaser.GameObjects.Container {
     this.reloading = true;
     let x = -width / 2 + BOBBLE_RADIUS + PADDING;
 
-    const bobble = this.createBobble(x - BOBBLE_RADIUS);
-    this.bobbles.push(bobble);
-    this.add(bobble);
+    const newBobble = this.createBobble(x - BOBBLE_RADIUS);
+    this.bobbles.push(newBobble);
+    if (newBobble) {
+      this.add(newBobble);
+    }
 
     const duration = 200;
     const cooltime = 20;
     this.bobbles.toReversed().forEach((bobble, i) => {
-      if (i === 0) {
-        bobble.scaleX = 0.1;
-        bobble.scaleY = 0.1;
-        this.scene.tweens.add({
-          targets: bobble,
-          x,
-          scaleX: 1,
-          scaleY: 1,
-          duration,
-          ease: "linear",
-          onComplete: () => {
-            this.scene.time.delayedCall(cooltime, () => {
-              if (this.bobbles.length < MAX_COUNT) {
-                this.reload();
-              } else {
-                this.reloading = false;
-                this.eventEmitter.emit("reloaded");
-              }
-            });
-          },
-        });
-      } else {
-        this.scene.tweens.add({
-          targets: bobble,
-          x,
-          duration,
-          ease: "linear",
+      if (bobble) {
+        if (i === 0) {
+          bobble.scaleX = 0.1;
+          bobble.scaleY = 0.1;
+          this.scene.tweens.add({
+            targets: bobble,
+            x,
+            scaleX: 1,
+            scaleY: 1,
+            duration,
+            ease: "linear",
+            onComplete: () => {
+              this.scene.time.delayedCall(cooltime, () => {
+                if (this.bobbles.length < MAX_COUNT) {
+                  this.reload();
+                } else {
+                  this.reloading = false;
+                  this.eventEmitter.emit("reloaded");
+                }
+              });
+            },
+          });
+        } else {
+          this.scene.tweens.add({
+            targets: bobble,
+            x,
+            duration,
+            ease: "linear",
+          });
+        }
+      } else if (i === 0) {
+        this.scene.time.delayedCall(cooltime + duration, () => {
+          if (this.bobbles.length < MAX_COUNT) {
+            this.reload();
+          } else {
+            this.reloading = false;
+            this.eventEmitter.emit("reloaded");
+          }
         });
       }
       x += BOBBLE_RADIUS * 2 + PADDING;

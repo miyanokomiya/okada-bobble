@@ -1,10 +1,54 @@
+import { BobbleMagazine } from "../../pawns/BobbleMagazine";
 import { BOBBLE_COLOR, BOBBLE_LABEL, BobbleSrc } from "../../utils/settings";
 import { Level_01 } from "../Level_01";
 
 export class IntroLevel_01 extends Level_01 {
-  protected bobbleSeed = "abdcefaeffgrielllllllEa";
   protected countInLine = 12;
   protected lineCount = 16;
+
+  override initBobbleMagazine() {
+    this.bobbleMagazine = new BobbleMagazine(
+      this.scene,
+      this.scene.scale.width / 2 - 160,
+      this.scene.scale.height - this.floorThickness - 22,
+      undefined,
+      true,
+    );
+    this.bobbleMagazine.setPreset([
+      {
+        label: BOBBLE_LABEL.DA,
+        color: BOBBLE_COLOR.D,
+      },
+      {
+        label: BOBBLE_LABEL.OKA,
+        color: BOBBLE_COLOR.D,
+      },
+      {
+        label: BOBBLE_LABEL.OKA,
+        color: BOBBLE_COLOR.C,
+      },
+      {
+        label: BOBBLE_LABEL.DA,
+        color: BOBBLE_COLOR.C,
+      },
+      {
+        label: BOBBLE_LABEL.DA,
+        color: BOBBLE_COLOR.B,
+      },
+      {
+        label: BOBBLE_LABEL.OKA,
+        color: BOBBLE_COLOR.B,
+      },
+      {
+        label: BOBBLE_LABEL.OKA,
+        color: BOBBLE_COLOR.A,
+      },
+      {
+        label: BOBBLE_LABEL.DA,
+        color: BOBBLE_COLOR.A,
+      },
+    ]);
+  }
 
   override getBobbleSrc(): BobbleSrc[] {
     return [
