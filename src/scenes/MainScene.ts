@@ -49,15 +49,10 @@ export class MainScene extends Phaser.Scene {
     this.level = new LevelClass(this);
     this.level.create();
     this.level.on("level-clear", () => {
-      const nextLevel = getLevel(this.config.grade, this.config.index + 1);
-      if (nextLevel) {
-        this.scene.start("MAIN", { grade: this.config.grade, index: this.config.index + 1 });
-      } else {
-        this.scene.start("LEVEL_SELECT", { grade: this.config.grade, index: this.config.index });
-      }
+      this.scene.pause().launch("LEVEL_END", { grade: this.config.grade, index: this.config.index, cleared: true });
     });
-    this.level.on("level-escape", () => {
-      this.scene.start("LEVEL_SELECT", { grade: this.config.grade, index: this.config.index });
+    this.level.on("level-fail", () => {
+      this.scene.pause().launch("LEVEL_END", { grade: this.config.grade, index: this.config.index });
     });
 
     new LevelHUD(this, { levelIndex: this.config.index });

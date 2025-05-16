@@ -1,8 +1,24 @@
+import { BobbleMagazine } from "../../pawns/BobbleMagazine";
 import { Bobble } from "../../pawns/bobbles/Bobble";
+
+interface Parent {
+  getBobbleMagazine: () => BobbleMagazine;
+  getLoadedBobble: () => Bobble | undefined;
+}
 
 export class RuleComponent {
   private bobbles: Bobble[] = [];
   private clusters: Set<Set<Bobble>> = new Set();
+
+  constructor(private parent: Parent) {}
+
+  isCleared(): boolean {
+    return this.bobbles.length === 0 && !this.parent.getLoadedBobble() && this.parent.getBobbleMagazine().isExausted();
+  }
+
+  isFailed(): boolean {
+    return this.bobbles.length > 0 && !this.parent.getLoadedBobble() && this.parent.getBobbleMagazine().isExausted();
+  }
 
   setBobbles(bobbles: Bobble[]) {
     this.bobbles = bobbles;

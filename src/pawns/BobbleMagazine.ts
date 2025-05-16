@@ -158,4 +158,10 @@ export class BobbleMagazine extends Phaser.GameObjects.Container {
     bobble.setPosition(p.x, p.y);
     return bobble;
   }
+
+  isExausted(): boolean {
+    if (!this.preset) return false;
+
+    return this.preset.length === 0 && this.bobbles.filter((b) => !!b).length === 0;
+  }
 }

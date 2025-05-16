@@ -17,11 +17,12 @@ export class Level_01 extends Phaser.Events.EventEmitter {
   protected bobbleGroup!: Phaser.GameObjects.Group;
   protected bobbleMagazine!: BobbleMagazine;
   protected loadedBobble: Bobble | undefined;
-  protected ruleComponent: RuleComponent = new RuleComponent();
+  protected ruleComponent!: RuleComponent;
   protected trajectoryComponent!: TrajectoryComponent;
   protected firstLineType: 0 | 1 = 0;
   protected trajectoryPath!: TrajectoryPath;
   protected isLoading: boolean = false;
+  protected isShooting: boolean = false;
 
   protected soundBobbleShoot: Phaser.Sound.BaseSound;
   protected soundBobbleLand: Phaser.Sound.BaseSound;
@@ -83,6 +84,7 @@ export class Level_01 extends Phaser.Events.EventEmitter {
     this.shootingGroup = this.scene.add.group();
     this.bobbleGroup = this.scene.add.group();
     this.initBobbleMagazine();
+    this.ruleComponent = new RuleComponent(this);
 
     const bobbles = this.getBobbleSrc().map((src) => {
       const { x, y } = this.getBobblePositionFromCoordinates(src.x, src.y);
@@ -136,11 +138,8 @@ export class Level_01 extends Phaser.Events.EventEmitter {
     if (this.inputComponent.justPressedKeys.space) {
       this.shootBobble();
     }
-    if (this.inputComponent.justPressedKeys.down) {
-      this.emit("level-clear");
-    }
     if (this.inputComponent.justPressedKeys.esc) {
-      this.emit("level-escape");
+      this.emit("level-fail");
     }
     this.updateTrajectory();
   }
@@ -191,6 +190,14 @@ export class Level_01 extends Phaser.Events.EventEmitter {
     return { x: xIndex, y: yIndex };
   }
 
+  getBobbleMagazine() {
+    return this.bobbleMagazine;
+  }
+
+  getLoadedBobble() {
+    return this.loadedBobble;
+  }
+
   private alignBobbles(animate = false) {
     const originX = this.wallThickness + BOBBLE_RADIUS + (this.firstLineType === 0 ? 0 : BOBBLE_RADIUS);
     const originY = this.ceilingThickness + BOBBLE_RADIUS;
@@ -221,11 +228,11 @@ export class Level_01 extends Phaser.Events.EventEmitter {
     });
   }
 
-  private isShooting() {
-    return this.shootingGroup.getLength() > 0;
-  }
-
   private finishShooting(bobble: Bobble) {
+    if (!this.shootingGroup.contains(bobble)) {
+      return;
+    }
+
     this.shootingGroup.remove(bobble);
     this.bobbleGroup.add(bobble);
     this.alignBobbles(true);
@@ -233,7 +240,7 @@ export class Level_01 extends Phaser.Events.EventEmitter {
 
     // Have to delay to wait for the alignment animation
     this.scene.time.delayedCall(100, () => {
-      this.ruleComponent.setBobbles(this.bobbleGroup.getChildren().filter((b) => b instanceof Bobble) as Bobble[]);
+      this.updateRuleComponent();
       const result = this.ruleComponent.landBobble(bobble);
       if (result.completed) {
         result.completed?.forEach((bobble) => {
@@ -245,17 +252,34 @@ export class Level_01 extends Phaser.Events.EventEmitter {
         this.resetBobbleMoves();
         this.cleanFloatingBobbles();
         this.soundBobbleComplete.play();
+
+        this.scene.time.delayedCall(1100, () => {
+          this.checkGameOver();
+          this.isShooting = false;
+        });
+      } else {
+        this.checkGameOver();
+        this.isShooting = false;
       }
     });
   }
 
+  private checkGameOver() {
+    if (this.ruleComponent.isCleared()) {
+      this.emit("level-clear");
+    } else if (this.ruleComponent.isFailed()) {
+      this.emit("level-fail");
+    }
+  }
+
   private shootBobble() {
-    if (this.isShooting()) return;
+    if (this.isShooting) return;
 
     const angle = this.turret.getTurretAngle();
     const newBobble = this.loadedBobble;
     if (!newBobble) return;
 
+    this.isShooting = true;
     this.loadedBobble = undefined;
     this.scene.physics.add.existing(newBobble);
     const body = newBobble.body as Phaser.Physics.Arcade.Body;
@@ -266,6 +290,10 @@ export class Level_01 extends Phaser.Events.EventEmitter {
     this.soundBobbleShoot.play();
 
     this.reloadBobble();
+  }
+
+  private updateRuleComponent() {
+    this.ruleComponent.setBobbles(this.bobbleGroup.getChildren().filter((b) => b instanceof Bobble) as Bobble[]);
   }
 
   private updateTrajectory() {
@@ -308,7 +336,7 @@ export class Level_01 extends Phaser.Events.EventEmitter {
   }
 
   private resetBobbleMoves() {
-    this.ruleComponent.setBobbles(this.bobbleGroup.getChildren().filter((b) => b instanceof Bobble));
+    this.updateRuleComponent();
     const clusters = this.ruleComponent.getBobbleClusters();
     clusters.forEach((cluster) => {
       cluster.forEach((bobble) => {
@@ -342,6 +370,7 @@ export class Level_01 extends Phaser.Events.EventEmitter {
     completed.forEach((bobble) => {
       this.bobbleGroup.remove(bobble);
     });
+    this.updateRuleComponent();
 
     this.scene.tweens.add({
       targets: completed,
