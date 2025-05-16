@@ -12,6 +12,7 @@ export class Gear extends Phaser.GameObjects.Container {
 
     this.gearImage = this.scene.add.image(0, 0, gearInfo.texture);
     this.add(this.gearImage);
+    this.setGearAngle(0);
   }
 
   setGearAngle(angle: number) {

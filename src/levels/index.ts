@@ -1,3 +1,4 @@
+import { ChalleLevel_01 } from "./challenges/ChalleLevel_01";
 import { IntroLevel_01 } from "./introductions/IntroLevel_01";
 import { IntroLevel_02 } from "./introductions/IntroLevel_02";
 import { IntroLevel_03 } from "./introductions/IntroLevel_03";
@@ -31,7 +32,7 @@ export const LEVEL_LIST: Level[] = [
   { grade: LEVEL_GRADE.INTRODUCTION, LevelClass: IntroLevel_04, version: 1 },
   { grade: LEVEL_GRADE.INTRODUCTION, LevelClass: IntroLevel_05, version: 1 },
 
-  { grade: LEVEL_GRADE.CHALLENGE, LevelClass: Level_01, version: 1 },
+  { grade: LEVEL_GRADE.CHALLENGE, LevelClass: ChalleLevel_01, version: 1 },
   { grade: LEVEL_GRADE.CHALLENGE, LevelClass: Level_01, version: 1 },
   { grade: LEVEL_GRADE.CHALLENGE, LevelClass: Level_01, version: 1 },
 ];
