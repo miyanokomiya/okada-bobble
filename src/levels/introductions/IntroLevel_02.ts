@@ -2,7 +2,7 @@ import { BobbleMagazine } from "../../pawns/BobbleMagazine";
 import { BOBBLE_COLOR, BOBBLE_LABEL, BobbleSrc } from "../../utils/settings";
 import { Level_01 } from "../Level_01";
 
-export class IntroLevel_01 extends Level_01 {
+export class IntroLevel_02 extends Level_01 {
   protected countInLine = 12;
   protected lineCount = 16;
 
@@ -24,11 +24,11 @@ export class IntroLevel_01 extends Level_01 {
         color: BOBBLE_COLOR.C,
       },
       {
-        label: BOBBLE_LABEL.DA,
+        label: BOBBLE_LABEL.OKA,
         color: BOBBLE_COLOR.B,
       },
       {
-        label: BOBBLE_LABEL.OKA,
+        label: BOBBLE_LABEL.DA,
         color: BOBBLE_COLOR.B,
       },
       {
@@ -43,23 +43,42 @@ export class IntroLevel_01 extends Level_01 {
   }
 
   override getBobbleSrc(): BobbleSrc[] {
+    const count = 3;
     return [
-      ...Array.from({ length: this.countInLine }).map((_, i) => ({
-        x: i,
+      ...Array.from({ length: count }).map((_, i) => ({
+        x: 3 + i,
         y: 0,
         label: BOBBLE_LABEL.OKA,
         color: BOBBLE_COLOR.A,
       })),
-      ...Array.from({ length: this.countInLine - 1 }).map((_, i) => ({
-        x: i,
+      ...Array.from({ length: count }).map((_, i) => ({
+        x: 6 + i,
+        y: 0,
+        label: BOBBLE_LABEL.DA,
+        color: BOBBLE_COLOR.A,
+      })),
+      ...Array.from({ length: count }).map((_, i) => ({
+        x: 3 + i,
         y: 1,
         label: BOBBLE_LABEL.DA,
         color: BOBBLE_COLOR.B,
       })),
-      ...Array.from({ length: this.countInLine }).map((_, i) => ({
-        x: i,
+      ...Array.from({ length: count }).map((_, i) => ({
+        x: 6 + i,
+        y: 1,
+        label: BOBBLE_LABEL.OKA,
+        color: BOBBLE_COLOR.B,
+      })),
+      ...Array.from({ length: count }).map((_, i) => ({
+        x: 3 + i,
         y: 2,
         label: BOBBLE_LABEL.OKA,
+        color: BOBBLE_COLOR.C,
+      })),
+      ...Array.from({ length: count }).map((_, i) => ({
+        x: 6 + i,
+        y: 2,
+        label: BOBBLE_LABEL.DA,
         color: BOBBLE_COLOR.C,
       })),
     ];
