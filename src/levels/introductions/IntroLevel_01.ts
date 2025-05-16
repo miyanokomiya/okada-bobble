@@ -9,8 +9,8 @@ export class IntroLevel_01 extends Level_01 {
   override initBobbleMagazine() {
     this.bobbleMagazine = new BobbleMagazine(
       this.scene,
-      this.scene.scale.width / 2 - 160,
-      this.scene.scale.height - this.floorThickness - 22,
+      0,
+      this.scene.scale.height - this.floorThickness,
       undefined,
       true,
     );

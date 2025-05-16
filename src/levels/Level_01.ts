@@ -147,8 +147,8 @@ export class Level_01 extends Phaser.Events.EventEmitter {
   protected initBobbleMagazine() {
     this.bobbleMagazine = new BobbleMagazine(
       this.scene,
-      this.scene.scale.width / 2 - 160,
-      this.scene.scale.height - this.floorThickness - 22,
+      0,
+      this.scene.scale.height - this.floorThickness,
       this.bobbleSeed,
     );
   }

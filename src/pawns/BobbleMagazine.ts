@@ -2,7 +2,7 @@ import { BobbleColor, BobbleLabel } from "../utils/settings";
 import { Bobble, BOBBLE_RADIUS } from "./bobbles/Bobble";
 import { createBobble } from "./bobbles/bobbleFactory";
 
-const MAX_COUNT = 5;
+const MAX_COUNT = 8;
 const PADDING = 5;
 const width = BOBBLE_RADIUS * 2 * MAX_COUNT + PADDING * (MAX_COUNT + 1);
 
@@ -22,10 +22,11 @@ export class BobbleMagazine extends Phaser.GameObjects.Container {
     seed?: string,
     private presetOnly = false,
   ) {
-    const background = scene.add.rectangle(0, 0, width, BOBBLE_RADIUS * 2 + PADDING * 2, 0xaaaaaa);
+    const background = scene.add.rectangle(0, 0, width, BOBBLE_RADIUS * 2 + PADDING * 2, 0xaaaaaa).setOrigin(0, 1);
     super(scene, x, y, [background]);
     scene.add.existing(this);
 
+    this.setSize(width, BOBBLE_RADIUS * 2 + PADDING * 2);
     this.rng = new Phaser.Math.RandomDataGenerator(seed ? [seed] : undefined);
   }
 
@@ -36,7 +37,7 @@ export class BobbleMagazine extends Phaser.GameObjects.Container {
   private createBobble(x: number): Bobble | null {
     const bobbleSrc = this.preset?.shift();
     if (bobbleSrc) {
-      return createBobble(this.scene, x, 0, {
+      return createBobble(this.scene, x, -BOBBLE_RADIUS - PADDING, {
         label: bobbleSrc.label,
         color: bobbleSrc.color,
       });
@@ -46,7 +47,7 @@ export class BobbleMagazine extends Phaser.GameObjects.Container {
 
     const labelSeed = this.rng.between(0, 1);
     const colorSeed = this.rng.between(1, 4);
-    return createBobble(this.scene, x, 0, {
+    return createBobble(this.scene, x, -BOBBLE_RADIUS - PADDING, {
       label: labelSeed === 0 ? "oka" : "da",
       color: colorSeed as any,
     });
@@ -57,7 +58,7 @@ export class BobbleMagazine extends Phaser.GameObjects.Container {
     if (currentCount >= MAX_COUNT) return;
 
     this.reloading = true;
-    let x = -width / 2 + BOBBLE_RADIUS + PADDING;
+    let x = BOBBLE_RADIUS + PADDING;
 
     const newBobble = this.createBobble(x - BOBBLE_RADIUS);
     this.bobbles.push(newBobble);
