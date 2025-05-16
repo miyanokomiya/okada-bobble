@@ -239,7 +239,7 @@ export class Level_01 extends Phaser.Events.EventEmitter {
     this.soundBobbleLand.play();
 
     // Have to delay to wait for the alignment animation
-    this.scene.time.delayedCall(100, () => {
+    this.scene.time.delayedCall(50, () => {
       this.updateRuleComponent();
       const result = this.ruleComponent.landBobble(bobble);
       if (result.completed) {
@@ -253,7 +253,7 @@ export class Level_01 extends Phaser.Events.EventEmitter {
         this.cleanFloatingBobbles();
         this.soundBobbleComplete.play();
 
-        this.scene.time.delayedCall(1100, () => {
+        this.scene.time.delayedCall(1000, () => {
           this.checkGameOver();
           this.isShooting = false;
         });
@@ -321,7 +321,7 @@ export class Level_01 extends Phaser.Events.EventEmitter {
       targets: this.loadedBobble,
       x: center.x,
       y: center.y,
-      duration: 200,
+      duration: 100,
       ease: "linear",
       onComplete: () => {
         this.isLoading = false;
@@ -376,7 +376,7 @@ export class Level_01 extends Phaser.Events.EventEmitter {
       targets: completed,
       alpha: 0,
       y: "+=160",
-      duration: 1000,
+      duration: 800,
       ease: Phaser.Math.Easing.Quadratic.In,
       onComplete: () => {
         completed.forEach((bobble) => {

@@ -52,33 +52,6 @@ export class BobbleMagazine extends Phaser.GameObjects.Container {
     });
   }
 
-  fill() {
-    const currentCount = this.bobbles.length;
-    if (currentCount >= MAX_COUNT) return;
-
-    let x = -width / 2 + BOBBLE_RADIUS + PADDING;
-    for (let i = currentCount; i < MAX_COUNT; i++) {
-      const bobble = this.createBobble(x);
-      this.bobbles.push(bobble);
-      if (bobble) {
-        this.add(bobble);
-      }
-    }
-
-    for (let i = 0; i < this.bobbles.length; i++) {
-      const bobble = this.bobbles[this.bobbles.length - 1 - i];
-      if (bobble) {
-        this.scene.tweens.add({
-          targets: bobble,
-          x,
-          duration: 500,
-          ease: "linear",
-        });
-      }
-      x += BOBBLE_RADIUS * 2 + PADDING;
-    }
-  }
-
   reload() {
     const currentCount = this.bobbles.length;
     if (currentCount >= MAX_COUNT) return;
@@ -92,7 +65,7 @@ export class BobbleMagazine extends Phaser.GameObjects.Container {
       this.add(newBobble);
     }
 
-    const duration = 200;
+    const duration = 100;
     const cooltime = 20;
     this.bobbles.toReversed().forEach((bobble, i) => {
       if (bobble) {
