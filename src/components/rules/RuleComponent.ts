@@ -48,7 +48,7 @@ export class RuleComponent {
       if (bobble.label === b.label) return false;
 
       const distanceSq = Phaser.Math.Distance.BetweenPointsSquared(bobble, b);
-      return distanceSq <= (bobble.body.radius + b.body.radius) ** 2 + 1;
+      return distanceSq <= (bobble.body.radius * 1.2 + b.body.radius) ** 2;
     });
     if (!isPaired) return;
 
