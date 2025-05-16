@@ -1,33 +1,24 @@
 import Phaser from "phaser";
+import { Gear } from "./Gear";
 
 const TURRET_ANGLE_RANGE = 80;
 
 export class Turret extends Phaser.GameObjects.Container {
   private sprite_top: Phaser.GameObjects.Sprite;
-  private gear2_1: Phaser.GameObjects.Image;
-  private gear3_1: Phaser.GameObjects.Image;
-  private gear3_2: Phaser.GameObjects.Image;
+  private gear2_1: Gear;
+  private gear3_1: Gear;
+  private gear3_2: Gear;
 
   constructor(scene: Phaser.Scene, x: number, y: number) {
     super(scene, x, y);
 
-    const gear2_1 = this.scene.add.image(0, -32, "gear2");
-    this.gear2_1 = gear2_1;
-    this.gear2_1 = gear2_1;
-
-    const gear3_1 = this.scene.add.image(64, 0, "gear3");
-    this.gear3_1 = gear3_1;
-    gear3_1.setPosition(
-      gear2_1.x + ((gear2_1.width + gear3_1.width) / 2) * 0.65,
-      gear2_1.y + ((gear2_1.height + gear3_1.height) / 2) * 0.65,
-    );
-    gear3_1.angle = 360 / 32;
-
-    const gear3_2 = this.scene.add.image(64, 0, "gear3");
-    this.gear3_2 = gear3_2;
-    gear3_2.setPosition(gear3_1.x + ((gear3_1.width + gear3_2.width) / 2) * 0.92, gear3_1.y);
-    const gears = [gear3_1, gear2_1, gear3_2];
-    this.add(gears);
+    this.gear2_1 = new Gear(scene, 2).setAlpha(0.75);
+    this.gear2_1.setPosition(0, -32);
+    this.gear3_1 = new Gear(scene, 3, true).setAlpha(0.75);
+    this.gear3_1.setPositionBasedOn(this.gear2_1, 45);
+    this.gear3_2 = new Gear(scene, 3).setAlpha(0.75);
+    this.gear3_2.setPositionBasedOn(this.gear3_1, -45);
+    this.add([this.gear2_1, this.gear3_1, this.gear3_2]);
 
     const sprite_base = scene.add.sprite(0, 0, "turret_base");
     const sprite_top = scene.add.sprite(0, -32, "turret_top");
@@ -68,8 +59,8 @@ export class Turret extends Phaser.GameObjects.Container {
 
   private rotateGears() {
     const angle = this.getTurretAngle();
-    this.gear2_1.angle = angle;
-    this.gear3_1.angle = -angle / 2 + 360 / 32;
-    this.gear3_2.angle = angle / 2;
+    this.gear2_1.setGearAngle(angle);
+    this.gear3_1.setGearAngle(-angle);
+    this.gear3_2.setGearAngle(angle);
   }
 }
