@@ -1,9 +1,15 @@
 import Phaser from "phaser";
+import gear1 from "../assets/images/gear1.svg";
+import gear2 from "../assets/images/gear2.svg";
+import gear3 from "../assets/images/gear3.svg";
+import gear4 from "../assets/images/gear4.svg";
 import { LEVEL_GRADE, LEVEL_LIST, LevelSceneConfig } from "../levels";
 import { LevelSelectButton } from "../widgets/LevelSelectButton";
 import { InputComponent } from "../components/InputComponent";
 import { DEFAULT_FONT } from "../utils/settings";
 import { SelectableGridComponent } from "../components/SelectableGridComponent";
+import { getGlobalStorageComponent } from "../components/GlobalStorageComponent";
+import { Background2 } from "../pawns/Background";
 
 export class LevelSelectScene extends Phaser.Scene {
   private inputComponent!: InputComponent;
@@ -12,6 +18,13 @@ export class LevelSelectScene extends Phaser.Scene {
 
   constructor() {
     super({ key: "LEVEL_SELECT" });
+  }
+
+  preload() {
+    this.load.image("gear1", gear1);
+    this.load.image("gear2", gear2);
+    this.load.image("gear3", gear3);
+    this.load.image("gear4", gear4);
   }
 
   init(config: Partial<LevelSceneConfig>) {
@@ -26,6 +39,10 @@ export class LevelSelectScene extends Phaser.Scene {
       this.scene.start("MAIN", { grade: button.levelGrade, index: button.levelIndex });
     });
 
+    const globalStore = getGlobalStorageComponent();
+
+    new Background2(this);
+
     const lineX = 100;
     const lineY = 100;
     const lineHeight = 100;
@@ -38,7 +55,19 @@ export class LevelSelectScene extends Phaser.Scene {
       });
 
       const buttons = list.map((level, levelIndex) => {
-        return new LevelSelectButton(this, label.x + levelIndex * 50, label.y + 40, level.grade, levelIndex);
+        const progress = globalStore.getLevelProgress({
+          grade: level.grade,
+          index: levelIndex,
+          version: level.version,
+        });
+        return new LevelSelectButton(
+          this,
+          label.x + levelIndex * 50,
+          label.y + 40,
+          level.grade,
+          levelIndex,
+          !!progress,
+        );
       });
       this.selectableGridComponent.addLine(buttons);
     });

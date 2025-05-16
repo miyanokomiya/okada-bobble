@@ -9,7 +9,7 @@ export class LevelSelectButton extends Phaser.GameObjects.Container implements S
   levelIndex: number;
   private background: Phaser.GameObjects.Graphics;
 
-  constructor(scene: Phaser.Scene, x: number, y: number, levelGrade: string, levelIndex: number) {
+  constructor(scene: Phaser.Scene, x: number, y: number, levelGrade: string, levelIndex: number, checked = false) {
     super(scene, x, y);
     scene.add.existing(this);
 
@@ -28,6 +28,16 @@ export class LevelSelectButton extends Phaser.GameObjects.Container implements S
     });
     levelText.setOrigin(0.5, 0.5);
     this.add(levelText);
+
+    if (checked) {
+      const checkMark = scene.add.text(WIDTH - 10, HEIGHT - 10, "✓", {
+        fontSize: "20px",
+        fontFamily: DEFAULT_FONT,
+        color: "#ffffff",
+      });
+      checkMark.setOrigin(0.5, 0.5);
+      this.add(checkMark);
+    }
 
     this.setSize(WIDTH, HEIGHT);
   }

@@ -16,6 +16,7 @@ export type LevelSceneConfig = { grade: LevelGrade; index: number };
 export type Level = {
   grade: (typeof LEVEL_GRADE)[LevelGrade];
   LevelClass: any;
+  version: number;
 };
 
 export type LevelInfo = {
@@ -24,15 +25,15 @@ export type LevelInfo = {
 };
 
 export const LEVEL_LIST: Level[] = [
-  { grade: LEVEL_GRADE.INTRODUCTION, LevelClass: IntroLevel_01 },
-  { grade: LEVEL_GRADE.INTRODUCTION, LevelClass: IntroLevel_02 },
-  { grade: LEVEL_GRADE.INTRODUCTION, LevelClass: IntroLevel_03 },
-  { grade: LEVEL_GRADE.INTRODUCTION, LevelClass: IntroLevel_04 },
-  { grade: LEVEL_GRADE.INTRODUCTION, LevelClass: IntroLevel_05 },
+  { grade: LEVEL_GRADE.INTRODUCTION, LevelClass: IntroLevel_01, version: 1 },
+  { grade: LEVEL_GRADE.INTRODUCTION, LevelClass: IntroLevel_02, version: 1 },
+  { grade: LEVEL_GRADE.INTRODUCTION, LevelClass: IntroLevel_03, version: 1 },
+  { grade: LEVEL_GRADE.INTRODUCTION, LevelClass: IntroLevel_04, version: 1 },
+  { grade: LEVEL_GRADE.INTRODUCTION, LevelClass: IntroLevel_05, version: 1 },
 
-  { grade: LEVEL_GRADE.CHALLENGE, LevelClass: Level_01 },
-  { grade: LEVEL_GRADE.CHALLENGE, LevelClass: Level_01 },
-  { grade: LEVEL_GRADE.CHALLENGE, LevelClass: Level_01 },
+  { grade: LEVEL_GRADE.CHALLENGE, LevelClass: Level_01, version: 1 },
+  { grade: LEVEL_GRADE.CHALLENGE, LevelClass: Level_01, version: 1 },
+  { grade: LEVEL_GRADE.CHALLENGE, LevelClass: Level_01, version: 1 },
 ];
 
 export function getNextLevel(current: Level): Level | undefined {
