@@ -21,6 +21,11 @@ export class InputComponent {
     this.keyD = scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.D);
     this.keyW = scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.W);
     this.keyESC = scene.input.keyboard?.addKey(Phaser.Input.Keyboard.KeyCodes.ESC);
+
+    scene.events.on(Phaser.Scenes.Events.RESUME, () => {
+      this.pressedKeys = {};
+      this.justPressedKeys = {};
+    });
   }
 
   update() {

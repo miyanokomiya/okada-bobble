@@ -49,6 +49,9 @@ export class MainScene extends Phaser.Scene {
     this.level.on("level-fail", () => {
       this.scene.pause().launch("LEVEL_END", { grade: this.config.grade, index: this.config.index });
     });
+    this.level.on("level-pause", () => {
+      this.scene.pause().launch("LEVEL_PAUSE", { grade: this.config.grade, index: this.config.index });
+    });
 
     new LevelHUD(this, this.config);
   }

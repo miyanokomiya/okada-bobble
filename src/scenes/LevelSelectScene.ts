@@ -93,7 +93,7 @@ export class LevelSelectScene extends Phaser.Scene {
       .text(
         lineX,
         this.scale.height - 40,
-        `Move: ↑←↓→, WASD\nAction: Space\nGive up: Escape\n\n${process.env.__APP_VERSION__}`,
+        `Move: ↑←↓→, WASD\nAction: Space\nPause: Escape\n\n${process.env.__APP_VERSION__}`,
         {
           fontSize: "20px",
           fontFamily: DEFAULT_FONT,

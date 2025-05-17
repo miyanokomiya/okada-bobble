@@ -13,6 +13,11 @@ export class VirtualKeyboardComponent {
     this.scene = scene;
     this.inputComponent = inputComponent;
 
+    scene.events.on(Phaser.Scenes.Events.RESUME, () => {
+      this.pressedKeys = {};
+      this.justPressedKeys = {};
+    });
+
     this.createButtons();
   }
 
