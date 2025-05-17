@@ -16,7 +16,7 @@ new Phaser.Game({
     default: "arcade",
     arcade: {
       gravity: { x: 0, y: 100 },
-      debug: true,
+      debug: import.meta.env.MODE === "development",
     },
   },
 });

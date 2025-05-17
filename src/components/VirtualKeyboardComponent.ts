@@ -22,45 +22,41 @@ export class VirtualKeyboardComponent {
   }
 
   private createButtons() {
-    const left = 40;
+    const left = 50;
+    const bottom = 50;
     const buttonSize = 60;
     const padding = 10;
     const screenWidth = this.scene.scale.width;
     const screenHeight = this.scene.scale.height;
 
     // Arrow keys on the left-hand side
-    this.createButton(left + padding, screenHeight - buttonSize - padding, buttonSize, "←", "left");
+    this.createButton(left, screenHeight - buttonSize - bottom, buttonSize, "←", "left");
     this.createButton(
-      left + padding + buttonSize + padding,
-      screenHeight - buttonSize * 2 - padding * 2,
+      left + buttonSize + padding,
+      screenHeight - buttonSize * 2 - bottom - padding,
       buttonSize,
       "↑",
       "up",
     );
+    this.createButton(left + buttonSize + padding, screenHeight - buttonSize - bottom, buttonSize, "↓", "down");
     this.createButton(
-      left + padding + buttonSize + padding,
-      screenHeight - buttonSize - padding,
-      buttonSize,
-      "↓",
-      "down",
-    );
-    this.createButton(
-      left + padding + buttonSize * 2 + padding * 2,
-      screenHeight - buttonSize - padding,
+      left + buttonSize * 2 + padding * 2,
+      screenHeight - buttonSize - bottom,
       buttonSize,
       "→",
       "right",
     );
 
     // Action buttons on the right-hand side
+    const actionButtonSize = buttonSize * 1.5;
     this.createButton(
-      screenWidth - buttonSize - padding,
-      screenHeight - buttonSize - padding,
-      buttonSize * 1.5,
+      screenWidth - (actionButtonSize + left) / 2,
+      screenHeight - buttonSize - bottom,
+      actionButtonSize,
       "Space",
       "space",
     );
-    this.createButton(left + padding, buttonSize + padding, buttonSize, "Esc", "esc");
+    this.createButton(left, buttonSize, buttonSize, "Esc", "esc");
   }
 
   private createButton(x: number, y: number, width: number, label: string, key: string) {
