@@ -1,6 +1,7 @@
 import { InputComponent } from "../components/InputComponent";
 import { RuleComponent } from "../components/rules/RuleComponent";
 import { TrajectoryComponent } from "../components/TrajectoryComponent";
+import { VirtualKeyboardComponent } from "../components/VirtualKeyboardComponent";
 import { Background } from "../pawns/Background";
 import { BobbleMagazine } from "../pawns/BobbleMagazine";
 import { Bobble, BOBBLE_RADIUS } from "../pawns/bobbles/Bobble";
@@ -13,6 +14,7 @@ import { BOBBLE_COLOR, BOBBLE_LABEL, BOBBLE_SPEED, BobbleSrc } from "../utils/se
 export class Level_01 extends Phaser.Events.EventEmitter {
   protected turret!: Turret;
   protected inputComponent!: InputComponent;
+  private vkc!: VirtualKeyboardComponent;
   protected shootingGroup!: Phaser.GameObjects.Group;
   protected bobbleGroup!: Phaser.GameObjects.Group;
   protected bobbleMagazine!: BobbleMagazine;
@@ -124,10 +126,13 @@ export class Level_01 extends Phaser.Events.EventEmitter {
 
     this.alignBobbles();
     this.resetBobbleMoves();
+
+    this.vkc = new VirtualKeyboardComponent(this.scene, this.inputComponent);
   }
 
   update(_time: number, delta: number): void {
     this.inputComponent.update();
+    this.vkc.update();
 
     if (this.inputComponent.pressedKeys.left) {
       this.turret.rotateTopBy((-20 / 1000) * delta);

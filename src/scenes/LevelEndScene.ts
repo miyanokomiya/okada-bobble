@@ -1,5 +1,6 @@
 import { InputComponent } from "../components/InputComponent";
 import { SelectableGridComponent } from "../components/SelectableGridComponent";
+import { VirtualKeyboardComponent } from "../components/VirtualKeyboardComponent";
 import { getLevel, LevelSceneConfig } from "../levels";
 import { DEFAULT_FONT } from "../utils/settings";
 import { MenuButton } from "../widgets/MenuButton";
@@ -9,6 +10,7 @@ type Config = LevelSceneConfig & { cleared: boolean };
 export class LevelEndScene extends Phaser.Scene {
   private config!: Config;
   protected inputComponent!: InputComponent;
+  private vkc!: VirtualKeyboardComponent;
   private selectableGridComponent!: SelectableGridComponent;
 
   constructor() {
@@ -67,10 +69,13 @@ export class LevelEndScene extends Phaser.Scene {
       this.selectableGridComponent.addLine([button]);
     });
     this.selectableGridComponent.focusItem(0, 0);
+
+    this.vkc = new VirtualKeyboardComponent(this, this.inputComponent);
   }
 
   update(_time: number, _delta: number): void {
     this.inputComponent.update();
+    this.vkc.update();
     this.selectableGridComponent.update();
   }
 }

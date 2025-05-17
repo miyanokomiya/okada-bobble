@@ -24,20 +24,33 @@ export class InputComponent {
   }
 
   update() {
-    this.updateKye("left", this.cursorKeys?.left.isDown || this.keyA?.isDown);
-    this.updateKye("up", this.cursorKeys?.up.isDown || this.keyW?.isDown);
-    this.updateKye("right", this.cursorKeys?.right.isDown || this.keyD?.isDown);
-    this.updateKye("down", this.cursorKeys?.down.isDown || this.keyS?.isDown);
-    this.updateKye("space", this.cursorKeys?.space.isDown);
-    this.updateKye("esc", this.keyESC?.isDown);
+    this.updateKey("left", this.cursorKeys?.left.isDown || this.keyA?.isDown);
+    this.updateKey("up", this.cursorKeys?.up.isDown || this.keyW?.isDown);
+    this.updateKey("right", this.cursorKeys?.right.isDown || this.keyD?.isDown);
+    this.updateKey("down", this.cursorKeys?.down.isDown || this.keyS?.isDown);
+    this.updateKey("space", this.cursorKeys?.space.isDown);
+    this.updateKey("esc", this.keyESC?.isDown);
   }
 
-  private updateKye(key: string, isDown = false) {
+  updateKey(key: string, isDown = false) {
     if (!this.pressedKeys[key] && isDown) {
       this.justPressedKeys[key] = true;
     } else {
       this.justPressedKeys[key] = false;
     }
     this.pressedKeys[key] = isDown;
+  }
+
+  applyExternalKeys(externalKeys: { [key: string]: boolean }, externalJustKeys: { [key: string]: boolean }) {
+    for (const key in externalKeys) {
+      if (externalKeys[key]) {
+        this.pressedKeys[key] = externalKeys[key];
+      }
+    }
+    for (const key in externalJustKeys) {
+      if (externalJustKeys[key]) {
+        this.justPressedKeys[key] = externalJustKeys[key];
+      }
+    }
   }
 }

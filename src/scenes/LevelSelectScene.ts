@@ -10,9 +10,11 @@ import { DEFAULT_FONT } from "../utils/settings";
 import { SelectableGridComponent } from "../components/SelectableGridComponent";
 import { getGlobalStorageComponent } from "../components/GlobalStorageComponent";
 import { Background2 } from "../pawns/Background";
+import { VirtualKeyboardComponent } from "../components/VirtualKeyboardComponent";
 
 export class LevelSelectScene extends Phaser.Scene {
   private inputComponent!: InputComponent;
+  private vkc!: VirtualKeyboardComponent;
   private selectableGridComponent!: SelectableGridComponent;
   private config: LevelSceneConfig = { grade: LEVEL_GRADE.INTRODUCTION, index: 0 };
 
@@ -85,6 +87,8 @@ export class LevelSelectScene extends Phaser.Scene {
       grouped.findIndex(([grade]) => grade === this.config.grade),
     );
 
+    this.vkc = new VirtualKeyboardComponent(this, this.inputComponent);
+
     this.add
       .text(
         lineX,
@@ -101,6 +105,7 @@ export class LevelSelectScene extends Phaser.Scene {
 
   update(_time: number, _delta: number): void {
     this.inputComponent.update();
+    this.vkc.update();
     this.selectableGridComponent.update();
   }
 }
