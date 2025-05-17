@@ -86,11 +86,16 @@ export class LevelSelectScene extends Phaser.Scene {
     );
 
     this.add
-      .text(lineX, this.scale.height - 62, "Move: ↑←↓→, WASD\nAction: Space\nGive up: Escape", {
-        fontSize: "20px",
-        fontFamily: DEFAULT_FONT,
-        color: "#000000",
-      })
+      .text(
+        lineX,
+        this.scale.height - 40,
+        `Move: ↑←↓→, WASD\nAction: Space\nGive up: Escape\n\n${process.env.__APP_VERSION__}`,
+        {
+          fontSize: "20px",
+          fontFamily: DEFAULT_FONT,
+          color: "#000000",
+        },
+      )
       .setOrigin(0, 1);
   }
 
