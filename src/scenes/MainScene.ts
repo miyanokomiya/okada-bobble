@@ -50,7 +50,7 @@ export class MainScene extends Phaser.Scene {
       this.scene.pause().launch("LEVEL_END", { grade: this.config.grade, index: this.config.index });
     });
 
-    new LevelHUD(this, { levelIndex: this.config.index });
+    new LevelHUD(this, this.config);
   }
 
   update(time: number, delta: number): void {

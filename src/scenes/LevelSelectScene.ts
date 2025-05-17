@@ -44,7 +44,15 @@ export class LevelSelectScene extends Phaser.Scene {
     new Background2(this);
 
     const lineX = 100;
-    const lineY = 100;
+
+    this.add.text(lineX, 62, "Okada Bobble", {
+      fontSize: "70px",
+      fontFamily: DEFAULT_FONT,
+      color: "#000000",
+    });
+
+    const lineY = 180;
+
     const lineHeight = 100;
     const grouped = Object.entries(Object.groupBy(LEVEL_LIST, (level) => level.grade));
     grouped.forEach(([, list], gradeIndex) => {
@@ -76,6 +84,14 @@ export class LevelSelectScene extends Phaser.Scene {
       this.config.index,
       grouped.findIndex(([grade]) => grade === this.config.grade),
     );
+
+    this.add
+      .text(lineX, this.scale.height - 62, "Move: ↑←↓→, WASD\nAction: Space\nGive up: Escape", {
+        fontSize: "20px",
+        fontFamily: DEFAULT_FONT,
+        color: "#000000",
+      })
+      .setOrigin(0, 1);
   }
 
   update(_time: number, _delta: number): void {
