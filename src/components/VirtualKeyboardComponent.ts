@@ -64,7 +64,8 @@ export class VirtualKeyboardComponent {
       .rectangle(x, y, width, 60, 0xaaaaaa, 0.5)
       .setInteractive()
       .on("pointerdown", () => this.handleButtonPress(key))
-      .on("pointerup", () => this.handleButtonRelease(key));
+      .on("pointerup", () => this.handleButtonRelease(key))
+      .on("pointerleave", () => this.handleButtonRelease(key));
 
     this.scene.add
       .text(x, y, label, {
