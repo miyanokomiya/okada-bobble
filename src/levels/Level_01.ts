@@ -130,10 +130,10 @@ export class Level_01 extends Phaser.Events.EventEmitter {
     this.inputComponent.update();
 
     if (this.inputComponent.pressedKeys.left) {
-      this.turret.rotateTopBy((-60 / 1000) * delta);
+      this.turret.rotateTopBy((-20 / 1000) * delta);
     }
     if (this.inputComponent.pressedKeys.right) {
-      this.turret.rotateTopBy((60 / 1000) * delta);
+      this.turret.rotateTopBy((20 / 1000) * delta);
     }
     if (this.inputComponent.justPressedKeys.space) {
       this.shootBobble();

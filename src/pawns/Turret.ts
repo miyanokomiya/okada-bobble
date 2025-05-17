@@ -6,6 +6,7 @@ const TURRET_ANGLE_RANGE = 80;
 export class Turret extends Phaser.GameObjects.Container {
   private sprite_top: Phaser.GameObjects.Sprite;
   private gear2_1: Gear;
+  private gear2_2: Gear;
   private gear3_1: Gear;
   private gear3_2: Gear;
 
@@ -14,11 +15,13 @@ export class Turret extends Phaser.GameObjects.Container {
 
     this.gear2_1 = new Gear(scene, 2).setAlpha(0.75);
     this.gear2_1.setPosition(0, -32);
-    this.gear3_1 = new Gear(scene, 3, true).setAlpha(0.75);
+    this.gear3_1 = new Gear(scene, 3, true);
     this.gear3_1.setPositionBasedOn(this.gear2_1, 45);
-    this.gear3_2 = new Gear(scene, 3).setAlpha(0.75);
+    this.gear3_2 = new Gear(scene, 3);
     this.gear3_2.setPositionBasedOn(this.gear3_1, -45);
-    this.add([this.gear2_1, this.gear3_1, this.gear3_2]);
+    this.gear2_2 = new Gear(scene, 2, true);
+    this.gear2_2.setPositionBasedOn(this.gear3_2, 45);
+    this.add([this.gear2_1, this.gear3_1, this.gear3_2, this.gear2_2]);
 
     const sprite_base = scene.add.sprite(0, 0, "turret_base");
     const sprite_top = scene.add.sprite(0, -32, "turret_top");
@@ -60,7 +63,8 @@ export class Turret extends Phaser.GameObjects.Container {
   private rotateGears() {
     const angle = this.getTurretAngle();
     this.gear2_1.setGearAngle(angle);
-    this.gear3_1.setGearAngle(-angle);
-    this.gear3_2.setGearAngle(angle);
+    this.gear3_1.setGearAngle(-angle / 2);
+    this.gear3_2.setGearAngle(angle / 2);
+    this.gear2_2.setGearAngle(-angle);
   }
 }
